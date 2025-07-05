@@ -1,0 +1,47 @@
+\section{Requirements \& Specifications}
+
+This section establishes the detailed technical and functional requirements for developing a SAT solver architecture specifically optimised for moderate-scale graph colouring problems. The requirements are derived from the fundamental research question: \emph{How can SAT solver architectures be specialised and optimised specifically for moderate-scale graph colouring problems to achieve superior performance compared to both generic SAT approaches and traditional graph colouring algorithms?} These specifications build upon the existing DPLL implementation foundation whilst incorporating graph-aware optimisations targeted at the 50-100 vertex problem scale.
+
+\subsection{Functional Requirements}
+
+\subsubsection{Core SAT Solving Capabilities}
+The solver shall maintain all current DPLL functionality including unit propagation, chronological backtracking, and conflict detection whilst incorporating graph-aware enhancements. The enhanced engine must support configurable variable ordering strategies that consider graph structural properties such as vertex degree distribution and saturation levels. The implementation shall provide conflict analysis mechanisms specifically adapted for graph colouring constraint patterns, enabling more effective learning from conflicts that arise in colouring problems. The engine architecture must support seamless integration of graph-theoretic heuristics without compromising the fundamental correctness guarantees of the DPLL procedure.
+
+\subsubsection{Graph Colouring Input/Output Handling}
+The solver shall support multiple graph representation formats including edge lists and adjacency matrices, with robust parsing capabilities for graphs containing 50-100 vertices. The system must generate optimised CNF encodings from graph structures, supporting direct encoding as the primary strategy, with sequential encoding and order encoding strategies as additional options where appropriate for the problem characteristics. The system shall convert SAT solver assignments back to graph colouring solutions with comprehensive correctness validation. Output formatting must provide human-readable colouring assignments that clearly indicate vertex-colour mappings. The validation component shall verify that no adjacent vertices share the same colour and that the minimum number of colours has been achieved where possible.
+
+\subsubsection{Solver Configuration and Parameterisation}
+The solver shall provide configurable control over optimisation strategies including the ability to toggle between graph-aware and generic heuristics for comparative analysis. Users must be able to configure preprocessing intensity levels, select encoding strategies, and enable or disable symmetry breaking mechanisms. The configuration system shall support parameter tuning for different graph types and problem scales whilst maintaining sensible defaults for typical use cases. Logging and debugging features must provide detailed information about solver decisions and performance characteristics during execution.
+
+\subsubsection{Graph Structure Analysis}
+The system shall implement comprehensive analysis of input graph properties including degree distribution, connectivity patterns, and local density characteristics. The analyser must identify key structural features such as high-degree vertices, local density patterns, triangle detection, and vertex centrality measures that can guide optimisation strategies. Support is required for multiple graph types including grid graphs, random graphs, complete graphs, and path-based structures within the target scale range. The analysis component shall provide quantitative metrics that enable adaptive algorithm selection based on graph characteristics.
+
+\subsection{Performance Requirements}
+
+\subsubsection{Time Complexity Targets}
+The solver shall achieve specific performance targets calibrated for the target hardware environment (Apple M4 MacBook with 16GB RAM). For 50-vertex problems, the solver must successfully solve 95\% of instances within 10 seconds of execution time. For 75-vertex problems, 75\% of instances shall be solved within 60 seconds. For the upper bound of 100-vertex problems, 50\% of instances must be solved within 300 seconds. Critically, the enhanced solver shall demonstrate at least a 2× speedup compared to the baseline generic DPLL implementation on graph colouring benchmarks whilst maintaining solution correctness.
+
+\subsubsection{Memory Usage Constraints}
+Peak memory usage shall remain under 4GB for 100-vertex problems, ensuring compatibility with the target hardware constraints. CNF formula size growth must maintain linear relationship with graph size, avoiding exponential memory consumption that would compromise scalability. The implementation shall include clause database management to prevent memory bloat during extended solving processes. Graph representation structures must be optimised for memory efficiency whilst enabling rapid access to structural information required by graph-aware heuristics.
+
+\subsubsection{Scalability Requirements}
+The solver shall exhibit predictable performance degradation as graph size increases, avoiding sudden performance cliffs within the target range. Performance characteristics must remain consistent across different graph topologies including dense graphs, sparse graphs, and structured graphs. The system shall support iterative graph size increases in testing scenarios, enabling comprehensive performance analysis. Graceful handling of edge cases including disconnected graphs and graphs with unusual degree distributions is required.
+
+\subsection{Graph Colouring Optimisations}
+
+\subsubsection{Problem-Specific Heuristic Requirements}
+The variable selection heuristics shall prioritise high-degree vertices in decision making, leveraging the insight that highly connected vertices impose the most constraints on neighbouring vertices. Saturation-based ordering must be implemented to consider the number of differently coloured adjacent vertices when making branching decisions. The system shall incorporate vertex centrality measures including betweenness centrality and closeness centrality to guide decision ordering effectively. Adaptive mechanisms must respond to local graph density patterns during search, adjusting heuristic behaviour based on the structural characteristics of the current subproblem.
+
+\subsubsection{Encoding Optimisation Specifications}
+The CNF encoding generator shall minimise clause count whilst preserving logical completeness and correctness. Support for both direct encoding and order encoding strategies must be provided, with automatic selection based on problem characteristics where appropriate. At-most-one constraints shall be generated using optimised encoding techniques that reduce the total number of clauses required. Symmetrical clause redundancy must be identified and eliminated during encoding generation to reduce search space complexity.
+
+\subsubsection{Symmetry Handling Requirements}
+The solver shall implement symmetry breaking for colour permutation symmetries, recognising that swapping colour labels produces equivalent solutions. Lexicographic ordering constraints must be added to eliminate equivalent solutions systematically whilst maintaining solution completeness. Lightweight symmetry detection algorithms shall identify symmetrical structures during preprocessing without imposing excessive computational overhead. The symmetry breaking implementation must balance the overhead of additional constraints against the reduction in search space complexity.
+
+\subsection{Success Criteria \& Metrics}
+
+\subsubsection{Performance Benchmarks and Targets}
+The enhanced solver shall outperform the baseline generic DPLL implementation by at least 50\% on graph colouring problems, measured by average solution time across diverse benchmark instances. Performance must match or exceed specialised graph colouring algorithms on 75\% of test cases within the target scale range. Consistent improvements must be demonstrated across different graph types including regular structures, random graphs, and real-world network topologies. The current DPLL implementation serves as the primary baseline for performance comparison, with additional baselines including Python NetworkX graph colouring algorithms, basic greedy colouring approaches, and published SAT-based graph colouring results from academic literature.
+
+\subsubsection{Quality Measures and Reliability}
+Solution optimality verification must confirm that the minimum number of colours has been achieved where computationally feasible. Reliability testing shall ensure consistent results across multiple runs of the same problem instance. Robustness evaluation must demonstrate stable performance across diverse graph structures including worst-case and adversarial examples. Quality metrics shall include chromatic number approximation ratios and success rates across different problem difficulty levels. Comparative analysis shall include both solution time and solution quality metrics to provide comprehensive performance evaluation.

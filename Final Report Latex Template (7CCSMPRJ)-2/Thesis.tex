@@ -1,0 +1,188 @@
+%&latexf
+\documentclass[hidelinks]{kclthesis} % <-- ADDED hidelinks option here for hyperref.
+
+%===========================================================
+% CHANGE BELOW ACCORDINGLY AND FILL IN YOUR ACTUAL DETAILS
+% DO NOT LEAVE \red{} COMMANDS IN YOUR FINAL THESIS!
+%===========================================================
+\modulecode{7CCSMPRJ/7CCSMUIP} % <-- REMOVED \red{}
+\submissiontitle{Individual Project Submission 2025/26} % <-- REMOVED \red{}, UPDATED YEAR
+\studentnumber{Your Student Number Here} % <-- REMOVED \red{}
+\programme{Your Programme Title Here} % <-- REMOVED \red{}
+\supervisor{Your Supervisor's Name Here} % <-- REMOVED \red{}
+\wordcount{Your Word Count Here} % <-- REMOVED \red{}
+\title{Optimising SAT Solvers for Graph Colouring} % <-- REMOVED \red{}
+\author{Daniel Edwards Rodriguez} % <-- REMOVED \red{}, inserted your name
+\ReleaseProject{0} % No change needed here if this is the desired setting
+\department{Informatics} % <-- REMOVED \red{}, adjusted example department. Check your actual department.
+%===========================================================
+
+
+% --- Preamble ---
+% This section sets up global document options, packages, and custom commands.
+
+% Core Packages (kclthesis might already load some, but these are safe)
+\usepackage[utf8]{inputenc} % Allows direct input of UTF-8 characters (e.g., accents).
+\usepackage[T1]{fontenc}    % Ensures proper font encoding for various characters.
+
+% Math Packages
+\usepackage{amsmath}        % Provides environments for multi-line equations and more.
+\usepackage{amsfonts}       % For additional math fonts (e.g., blackboard bold).
+\usepackage{amssymb}        % For additional math symbols.
+
+% Graphics and Floats
+\usepackage{graphicx}       % Essential for including images (\includegraphics).
+\usepackage{float}          % Provides more control over figure/table placement (e.g., [H] here).
+\usepackage{subcaption}     % For creating subfigures and subtables.
+\usepackage{graphbox}       % Added from your original, ensures it's included
+
+% Hyperlinks and Cross-referencing
+% IMPORTANT: Removed this line as 'hidelinks' is now in \documentclass and kclthesis loads hyperref.
+% \usepackage{hyperref}
+% REMOVED: \usepackage{hyperref}  <-- This was a duplicate, and is now handled globally by \documentclass.
+
+\usepackage{url}            % For better formatting of URLs.
+\usepackage{cleveref}       % Recommended for smart cross-referencing (e.g., \cref{fig:myfigure} becomes "Figure 1").
+
+% --- Bibliography Setup (Using BibLaTeX for IEEE style) ---
+\usepackage[backend=biber, style=ieee, sorting=none]{biblatex} % <-- CHANGED style to ieee and sorting to none
+\addbibresource{contents/references.bib} % <-- Set this to your actual references file name and path
+                                         % (e.g., 'contents/myreferences.bib' if you renamed it)
+
+% Nomenclature & Glossaries (from your original template)
+\usepackage[intoc]{nomencl}
+%\makenomenclature % Uncomment if you define a nomenclature
+\makeindex % Make sure this is required by your thesis
+\usepackage[toc, acronym]{glossaries} % Uncomment if you define glossaries and acronyms
+% \makeglossaries % Uncomment if you define glossaries and acronyms
+
+% Line Spacing
+\linespread{1}
+
+% Math Command Definitions (from your original template)
+\newfam\msbfam
+\def\Bbb#1{\fam\msbfam\relax#1}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{exa}{Example}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\newcommand{\ind}{1\hspace{-2.1mm}{1}} %Indicator Function
+\newcommand{\I}{\mathtt{i}}
+\newcommand{\D}{\mathrm{d}}
+\newcommand{\E}{\mathrm{e}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\sgn}{\mathrm{sgn}}
+\newcommand{\atanh}{\mathrm{arctanh}}
+\def\equalDistrib{\,{\buildrel \Delta \over =}\,}
+\numberwithin{equation}{section}
+% Re-adding \def\red and \def\blue based on previous errors, assuming kclthesis might use them internally
+\usepackage{xcolor} % Make sure xcolor is loaded if \textcolor is used.
+\def\blue#1{\textcolor{blue}{#1}} % Keep these if kclthesis depends on them,
+\def\red#1{\textcolor{red}{#1}}   % but ensure your actual content does not use \red for placeholders.
+
+% Table of Contents Depth
+\setcounter{tocdepth}{5}
+\setcounter{secnumdepth}{5}
+
+% --- Document Start ---
+\begin{document}
+\pagenumbering{gobble} % No page numbers on title page
+
+
+%%%%%% Front Pages Managed by kclthesis.cls
+\maketitle 		% official styled layout
+\maketitleTwo 	% adapted layout which looks nicer from my point of view.
+
+%%%%%% empty page after main page.
+\newpage
+\thispagestyle{empty}
+\mbox{}
+\newpage
+
+%%%%%% Acknowledgements, Abstract, Nomenclature (These are template-specific includes)
+% REMOVED this line as per template instructions:
+% \include{contents/TemplateDescriptions}
+\include{contents/acknowledgements}
+\include{contents/abstract}
+\include{contents/nomenclature}
+
+%%%%%% Table of contents and Lists of Figures/Tables
+\pagenumbering{roman} % Roman numerals for front matter
+\setcounter{tocdepth}{4}
+\tableofcontents
+\newpage % Ensures ToC ends on its own page
+
+% kclthesis template specific commands for header/footer (already in your original)
+\include{contents/figures_tables} % This typically includes \listoffigures and \listoftables
+\fancyhead{}
+\fancyfoot{}
+\pagestyle{fancy}
+%\fancyhead{\sffamily\small \thepage}
+%\fancyhead{\sffamily\small \nouppercase{\rightmark}}
+\fancyhead[RO,LE]{\sffamily\small \thepage}
+\fancyhead[LO,RE]{\sffamily\small \nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.0pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%% Main content
+\pagenumbering{arabic} % Arabic numerals for main body
+
+% --- YOUR ACTUAL CHAPTER INCLUDES START HERE ---
+% REMOVED these template placeholders. Ensure your actual chapter files are named as below
+% and located in the 'contents/' folder. These files should start with \section{}, not \chapter{}.
+% \include{contents/introduction}
+% \include{contents/background}
+% \include{contents/main} % THIS WAS THE PROBLEM CHILD. REMOVED.
+% \include{contents/conclusion}
+
+% Assuming your chapter files are:
+% contents/introduction_chapter.tex
+% contents/literature_review.tex
+% contents/requirements_specifications.tex
+% contents/methodology_implementation.tex
+% contents/results_analysis_evaluation.tex
+% contents/legal_social_ethical_professional_issues.tex
+% contents/conclusion.tex (if you have one, use this name)
+
+\include{contents/introduction_chapter.tex} % Your actual Introduction chapter
+\include{contents/literature_review.tex} % Your actual Literature Review
+\include{contents/requirements_specifications.tex} % Your actual Requirements chapter
+\include{contents/methodology_implementation.tex} % Your actual Methodology chapter
+\include{contents/results_analysis_evaluation.tex} % Your actual Results chapter
+\include{contents/legal_social_ethical_professional_issues.tex} % Your actual LSEPI chapter
+\include{contents/conclusion.tex} % Your Conclusion chapter (e.g., if you created this file)
+
+%%%%% References (using biblatex's \printbibliography)
+% REMOVED the old BibTeX commands:
+% \bibliographystyle{ieeetr}
+% \bibliography{contents/sample1}
+\printbibliography % <--- This is the command that generates your bibliography with biblatex
+
+%%%%% Declaration
+%\include{structure/declaration} % Uncomment if needed and file exists
+
+%%%%% Appendix
+% Insert more section if necessary if more appendix sections are needed
+% Remove or remark the following two lines if appendix is not necessary
+\appendix
+\include{contents/app_1} % Make sure 'contents/app_1.tex' exists if this is included
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}
