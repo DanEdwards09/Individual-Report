@@ -42,7 +42,21 @@
 % IMPORTANT: Removed this line as 'hidelinks' is now in \documentclass and kclthesis loads hyperref.
 % \usepackage{hyperref}
 % REMOVED: \usepackage{hyperref}  <-- This was a duplicate, and is now handled globally by \documentclass.
+\usepackage{listings}
+\usepackage{xcolor}
 
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single,
+    breaklines=true,
+    showstringspaces=false
+}
 \usepackage{url}            % For better formatting of URLs.
 \usepackage{cleveref}       % Recommended for smart cross-referencing (e.g., \cref{fig:myfigure} becomes "Figure 1").
 
