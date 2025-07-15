@@ -57,9 +57,30 @@
     breaklines=true,
     showstringspaces=false
 }
-\usepackage{url}            % For better formatting of URLs.
-\usepackage{cleveref}       % Recommended for smart cross-referencing (e.g., \cref{fig:myfigure} becomes "Figure 1").
+\usepackage{url}            
+% For better formatting of URLs.
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
 
+% Configure hyperref for better cross-referencing
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=red,
+}
+
+% Configure listings for better code display
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    captionpos=b
+}
 % --- Bibliography Setup (Using BibLaTeX for IEEE style) ---
 \usepackage[backend=biber, style=ieee, sorting=none]{biblatex} % <-- CHANGED style to ieee and sorting to none
 \addbibresource{contents/references.bib} % <-- Set this to your actual references file name and path

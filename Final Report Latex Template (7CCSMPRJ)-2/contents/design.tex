@@ -44,6 +44,13 @@ The component hierarchy follows a clear separation of concerns: the \texttt{Grap
 \label{fig:architecture}
 \end{figure}
 
+
+\subsubsection{System Integration Design}
+
+As illustrated in Figure~\ref{fig:integration}, the system integration design prioritises backward compatibility with the existing DPLL solver infrastructure, ensuring that the enhanced solver can function as a drop-in replacement whilst providing additional graph-aware capabilities. The design principle of graceful enhancement means that all existing DPLL functionality remains unchanged and accessible, with graph-aware features providing supplementary optimisation rather than fundamental algorithmic replacement.
+
+Interface design emphasises clean separation between graph analysis and SAT solving concerns through well-defined method signatures and data structures, as depicted in the modular component structure of Figure~\ref{fig:integration}. The fallback strategy ensures robust operation through multiple degradation levels: when graph awareness is disabled, the solver operates identically to the baseline DPLL implementation; when graph analysis fails or produces invalid results, the system defaults to standard variable ordering heuristics; when preprocessing encounters errors, the solver continues with the original problem formulation.
+
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[node distance=2cm, auto]
@@ -74,12 +81,6 @@ The component hierarchy follows a clear separation of concerns: the \texttt{Grap
 \caption{System Integration with Fallback Mechanisms}
 \label{fig:integration}
 \end{figure}
-
-\subsubsection{System Integration Design}
-
-As illustrated in Figure~\ref{fig:integration}, the system integration design prioritises backward compatibility with the existing DPLL solver infrastructure, ensuring that the enhanced solver can function as a drop-in replacement whilst providing additional graph-aware capabilities. The design principle of graceful enhancement means that all existing DPLL functionality remains unchanged and accessible, with graph-aware features providing supplementary optimisation rather than fundamental algorithmic replacement.
-
-Interface design emphasises clean separation between graph analysis and SAT solving concerns through well-defined method signatures and data structures, as depicted in the modular component structure of Figure~\ref{fig:integration}. The fallback strategy ensures robust operation through multiple degradation levels: when graph awareness is disabled, the solver operates identically to the baseline DPLL implementation; when graph analysis fails or produces invalid results, the system defaults to standard variable ordering heuristics; when preprocessing encounters errors, the solver continues with the original problem formulation.
 
 \subsubsection{Scalability Design Considerations}
 
