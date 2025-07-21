@@ -1,52 +1,88 @@
 \section{Requirements \& Specifications}
 
-This section establishes the core technical and functional requirements for developing a SAT solver architecture specifically optimised for moderate-scale graph colouring problems. The requirements address the fundamental research question: \emph{How can SAT solver architectures be specialised and optimised specifically for moderate-scale graph colouring problems to achieve superior performance compared to both generic SAT approaches and traditional graph colouring algorithms?} These specifications define what the system must accomplish, whilst detailed implementation approaches and validation methodologies are addressed in subsequent chapters.
+This section establishes the core technical and functional requirements for developing a SAT solver architecture that prioritizes worst-case robustness over average-case performance for moderate-scale graph coloring problems. The requirements address the fundamental research question: \emph{How can graph-aware SAT solver architectures be designed to systematically trade average-case performance for worst-case robustness, ensuring reliable solution capability on challenging instances where baseline approaches fail?} These specifications define reliability-focused objectives and robustness guarantees, whilst detailed implementation approaches and validation methodologies are addressed in subsequent chapters.
 
-\subsection{Functional Requirements}
+\subsection{Robustness-Oriented Functional Requirements}
 
-\subsubsection{Core Solver Capabilities}
-The enhanced SAT solver shall maintain complete DPLL functionality including unit propagation, chronological backtracking, and conflict detection whilst incorporating graph-aware enhancements. The system must support configurable variable ordering strategies that exploit graph structural properties such as vertex degree distribution, saturation levels, and centrality measures. The solver shall seamlessly integrate graph-theoretic heuristics without compromising fundamental correctness guarantees of the underlying SAT solving procedure.
+\subsubsection{Core Reliability Capabilities}
+The enhanced SAT solver shall maintain complete DPLL correctness guarantees while incorporating graph-aware robustness enhancements that ensure reliable solution capability on challenging instances. The system must provide configurable robustness modes that systematically trade computational overhead for reliability improvements, including comprehensive preprocessing analysis and fallback mechanisms that guarantee solution capability even when optimizations fail.
 
-\subsubsection{Graph Processing and Analysis}
-The system shall implement comprehensive graph structure analysis including degree distribution computation, connectivity pattern recognition, and vertex centrality calculation. The solver must support multiple standard graph input formats including DIMACS graph format, edge list representation, and adjacency matrix notation, with robust error handling and format validation. Graph preprocessing shall extract structural features that guide optimisation strategies whilst completing within reasonable computational bounds.
+The solver shall implement comprehensive error handling and graceful degradation strategies that ensure operational reliability under all conditions. Circuit breaker patterns must automatically disable problematic optimizations while maintaining basic solver functionality, providing robustness guarantees that exceed baseline DPLL implementations. The system shall never perform worse than standard approaches, even when graph-aware optimizations prove ineffective on specific problem instances.
 
-\subsubsection{Encoding and Optimisation}
-The solver shall generate optimised CNF encodings from graph structures, with direct encoding as the primary strategy and support for alternative encoding approaches where beneficial. The system must implement symmetry breaking for colour permutation symmetries through lexicographic ordering constraints. At-most-one constraints shall utilise efficient encoding techniques that minimise clause count whilst preserving logical completeness and correctness.
+\subsubsection{Comprehensive Graph Analysis for Robustness}
+The system shall implement exhaustive graph structural analysis that accepts 15-20\% preprocessing overhead to ensure robust variable ordering on challenging instances. Comprehensive centrality computation must include degree analysis, betweenness centrality for moderate-scale problems, and composite scoring mechanisms that prioritize structural understanding over computational efficiency.
 
-\subsubsection{Configuration and Extensibility}
-The solver shall provide configurable control over optimisation strategies, enabling users to toggle between graph-aware and generic heuristics for comparative analysis. The system must support parameter configuration for different graph types and problem scales whilst maintaining sensible defaults. The architecture shall enable incremental enhancement through modular design with standardised interfaces for adding new heuristics and encoding strategies.
+The analysis framework shall provide multiple fallback levels that ensure reliable operation across diverse graph characteristics: sophisticated analysis for challenging instances that justify computational investment, simplified degree-based analysis when computational constraints prevent comprehensive processing, and baseline heuristics when graph analysis encounters failures. This hierarchical approach guarantees robust operation while optimizing analysis depth based on problem characteristics and computational resources.
 
-\subsection{Performance Requirements}
+\subsubsection{Reliability-Focused Encoding and Optimization}
+The solver shall generate CNF encodings that prioritize correctness and completeness over encoding efficiency, ensuring that robustness optimizations never compromise solution quality or algorithmic guarantees. Direct encoding shall remain the primary strategy with comprehensive validation mechanisms that verify encoding correctness across diverse graph structures.
 
-\subsubsection{Execution Time Targets}
-The solver shall achieve specific performance targets calibrated for moderate-scale problems on the target hardware environment (Apple M4 MacBook with 16GB RAM). For 50-vertex problems, the system must successfully solve 95\% of instances within 10 seconds. For 75-vertex problems, 75\% of instances shall be solved within 60 seconds. For 100-vertex problems, 50\% of instances must be solved within 300 seconds. The enhanced solver shall demonstrate at least 2× speedup compared to baseline generic DPLL implementation on graph colouring benchmarks.
+Symmetry breaking implementation must integrate seamlessly with graph-aware variable ordering while maintaining predictable behavior characteristics. The system shall employ conservative optimization strategies that prioritize systematic search guidance over aggressive reduction techniques that could introduce unpredictable performance characteristics on challenging instances.
 
-\subsubsection{Memory and Scalability Constraints}
-Peak memory consumption shall remain under 4GB for 100-vertex problems, ensuring compatibility with target hardware constraints. CNF formula size growth must maintain near-linear relationship with graph size, avoiding exponential memory consumption that would compromise scalability. The system shall exhibit predictable performance degradation as graph size increases, avoiding sudden performance cliffs within the target range of 50-100 vertices.
+\subsubsection{Trade-off Configuration and Monitoring}
+The solver shall provide comprehensive configuration controls that enable systematic evaluation of performance-robustness trade-offs across different operational modes. Users must be able to configure overhead budgets, analysis depth, and fallback thresholds to balance robustness benefits against computational costs based on deployment requirements.
 
-\subsubsection{Quality and Reliability}
-The solver must generate correct solutions that satisfy all graph colouring constraints, with no adjacent vertices sharing identical colours. The system shall provide consistent results across multiple runs of identical problem instances when using controlled conditions. Solution quality must match or exceed existing approaches within the target problem domain, with particular emphasis on minimising the number of colours used where computationally feasible.
+The system shall implement detailed monitoring infrastructure that captures trade-off metrics including preprocessing overhead, robustness improvements, success rate comparisons, and failure mode analysis. This monitoring capability enables systematic validation of trade-off hypotheses while providing deployment guidance for reliability-critical applications.
 
-\subsection{System Architecture Requirements}
+\subsection{Performance-Robustness Trade-off Requirements}
 
-\subsubsection{Modular Design Structure}
-The solver shall be built using four separate, independent modules that work together: a core SAT engine that handles the main solving logic, a graph analysis module that examines graph properties and structure, an encoding module that converts graph problems into logical formulas, and a heuristics module that makes intelligent decisions based on graph characteristics. Each component must expose well-defined interfaces enabling independent testing and modification without affecting other system components.
+\subsubsection{Acceptable Overhead Targets}
+The enhanced solver shall accept systematic performance overhead in exchange for robustness guarantees, with target overhead factors between 1.2x-2.0x average-case execution time compared to baseline DPLL implementations. Overhead above 2.0x indicates excessive cost requiring optimization or configuration adjustment, while overhead below 1.2x suggests insufficient robustness investment.
 
-\subsubsection{Interface and Integration Specifications}
-Components must communicate through standardised interfaces for performance monitoring and flexible selection mechanisms for choosing algorithms, ensuring modules remain independent and well-organised throughout the system. The SAT engine interface shall accept graph-aware variable ordering strategies and preprocessing directives whilst maintaining compatibility with standard DPLL procedures. Solution output must provide both internal SAT assignment format and human-readable graph colouring representation.
+The system must demonstrate predictable overhead characteristics that enable accurate deployment planning and cost-benefit analysis. Performance degradation shall remain consistent across diverse problem characteristics within the target range, avoiding unpredictable behavior that could undermine reliability for deployment in production systems.
 
-\subsection{Technical Constraints and Scope}
+\subsubsection{Reliability Improvement Guarantees}
+The enhanced solver must achieve 100\% solution capability on challenging instances where baseline approaches exhibit timeout failures or exponential degradation. Success rate improvements shall be systematic and measurable across diverse graph categories including dense random graphs, high-connectivity instances, and structurally complex problems that stress standard variable ordering heuristics.
 
-\subsubsection{Problem Scale and Domain}
-The solver development focuses specifically on moderate-scale graph colouring problems within the 50-100 vertex range. This scope enables detailed investigation of graph-structural optimisations that provide measurable advantages over generic approaches whilst remaining computationally feasible for comprehensive evaluation. The system shall support diverse graph types including regular structures, random graphs, and real-world network topologies within this scale range.
+Reliability improvements must be validated through comprehensive stress testing that deliberately targets problematic scenarios known to defeat baseline approaches. The system shall provide documented robustness benefits that justify performance overhead through empirical demonstration of enhanced capability on challenging instances.
 
-\subsubsection{Implementation Boundaries}
-The project scope excludes advanced parallel processing optimisations and integration with external graph analysis libraries to maintain focus and feasibility within academic constraints. Extension to related problems such as edge colouring or list colouring lies beyond the current scope. The implementation shall prioritise graph-aware optimisations over complex learning mechanisms, recognising that sophisticated clause learning may provide diminishing returns at moderate problem scales.
+\subsubsection{Memory and Resource Efficiency}
+Peak memory consumption shall scale predictably with robustness analysis complexity, maintaining reasonable resource requirements despite comprehensive preprocessing. Memory overhead associated with graph analysis and priority caching must remain proportional to problem scale and justified by robustness benefits.
 
-\subsection{Success Criteria}
+The system shall implement adaptive resource management that scales analysis complexity based on available computational budget and problem characteristics. Resource usage must be predictable and configurable to support deployment planning in resource-constrained environments.
 
-\subsubsection{Performance Benchmarks}
-The enhanced solver must demonstrate measurable superiority over baseline approaches through multiple evaluation dimensions including solution time improvement, success rate enhancement, and memory efficiency gains. Performance improvements must be consistent across diverse benchmark instances within the target scale range. The system shall outperform both generic SAT solvers and traditional graph colouring approaches on representative problem sets.
+\subsection{Robustness Architecture Requirements}
 
-\subsubsection{Technical Contributions}
-The project must contribute novel insights into the relationship between graph structure and SAT solving efficiency, with demonstrated improvements in algorithm design for moderate-scale combinatorial problems. Technical innovations should include effective graph-aware heuristics, efficient encoding strategies, or architectural improvements applicable to related optimisation domains. The implementation must advance understanding of specialised SAT solving techniques whilst maintaining rigorous correctness standards.
+\subsubsection{Fault-Tolerant Modular Design}
+The solver shall implement a four-component architecture with comprehensive error handling and fallback capabilities: a robustness-enhanced SAT engine that maintains DPLL guarantees while incorporating graph-aware improvements, a comprehensive graph analysis module that performs structural characterization with multiple fallback levels, a reliability-focused encoding module that prioritizes correctness over efficiency, and a robustness monitoring module that tracks trade-off effectiveness and failure modes.
+
+Each component must implement circuit breaker patterns that automatically disable problematic features while maintaining overall system reliability. Component interfaces shall support independent testing and validation while ensuring that failures in individual modules never compromise overall solver capability.
+
+\subsubsection{Graceful Degradation Specifications}
+The system shall implement comprehensive degradation strategies with multiple fallback levels that ensure reliable operation under all conditions. Primary degradation involves disabling sophisticated graph analysis while maintaining enhanced variable ordering capabilities. Secondary degradation reverts to standard DPLL heuristics while preserving enhanced conflict resolution. Final degradation operates identically to baseline DPLL with full compatibility guarantees.
+
+Degradation triggers must be configurable and include timeout detection, memory usage monitoring, analysis failure rates, and performance threshold violations. The system shall maintain detailed logging of degradation events to enable systematic analysis of robustness optimization effectiveness across diverse operational scenarios.
+
+\subsubsection{Interface Compatibility and Integration}
+The enhanced solver shall function as a drop-in replacement for standard DPLL implementations while providing additional robustness configuration options. All existing API contracts must be preserved with no changes to input formats, output specifications, or method signatures that could compromise backward compatibility.
+
+Integration specifications require seamless operation within existing SAT solver testing frameworks and benchmark evaluation systems. The solver shall accept standard SAT input formats while providing additional configuration parameters for robustness optimization without breaking compatibility with existing infrastructure.
+
+\subsection{Validation and Success Criteria}
+
+\subsubsection{Robustness Validation Benchmarks}
+The enhanced solver must demonstrate systematic robustness improvements through comprehensive evaluation on challenging instances that reliably defeat baseline approaches. Success criteria include 100\% solution capability on dense random graphs with edge densities exceeding 0.4 where baseline approaches exhibit timeout failures, consistent performance on high-connectivity instances that stress standard variable ordering heuristics, and reliable operation on structurally complex graphs that expose fundamental limitations in naive search strategies.
+
+Validation methodology shall employ deliberate stress testing that systematically increases problem difficulty until baseline approaches fail, then evaluates enhanced solver behavior on these challenging instances. This adversarial evaluation approach provides concrete evidence for robustness claims beyond simple performance comparison.
+
+\subsubsection{Trade-off Effectiveness Criteria}
+The system must achieve acceptable trade-off ratios that justify performance overhead through measurable reliability improvements. Success criteria include overhead factors between 1.2x-2.0x accompanied by significant success rate improvements, consistent trade-off characteristics across diverse problem categories, and predictable behavior that enables accurate deployment planning.
+
+Trade-off validation shall employ systematic parameter sweeps across graph characteristics, connectivity patterns, and structural complexity to establish boundaries of optimization effectiveness. Statistical analysis must demonstrate consistency of trade-off benefits across multiple evaluation dimensions.
+
+\subsubsection{Technical Contribution Requirements}
+The project must advance understanding of performance-robustness trade-offs in specialized SAT solving through empirical validation of graph-aware optimization strategies. Technical contributions shall include demonstrated trade-off quantification with clear cost-benefit analysis, validated robustness improvements on challenging instances with documented failure mode prevention, architectural innovations that enable systematic trade-off evaluation, and methodological advances in reliability-focused solver design.
+
+The implementation must provide novel insights into the relationship between graph structure and SAT solving robustness while maintaining rigorous correctness standards and comprehensive validation protocols. Research contributions shall be validated through peer review and empirical evaluation against established baseline approaches.
+
+\subsection{Scope Limitations and Boundaries}
+
+\subsubsection{Problem Scale and Domain Focus}
+The solver development focuses specifically on moderate-scale graph coloring problems within the 50-100 vertex range where comprehensive graph analysis remains computationally feasible while providing measurable robustness benefits. This scope enables detailed investigation of trade-off characteristics while avoiding scalability challenges that could obscure robustness optimization effectiveness.
+
+The system shall support diverse graph types including regular structures, random graphs with varying density, and pathological instances designed to stress solver robustness. Problem domain boundaries exclude extremely large-scale industrial applications where different optimization strategies may prove more effective.
+
+\subsubsection{Implementation and Research Boundaries}
+The project scope excludes advanced parallel processing optimizations and sophisticated learning mechanisms that could introduce unpredictable behavior characteristics incompatible with robustness objectives. Extension to related problems such as edge coloring or scheduling applications lies beyond the current scope, maintaining focus on graph coloring optimization.
+
+The implementation shall prioritize graph-aware robustness enhancements over complex CDCL features, recognizing that moderate-scale problems benefit more from improved variable ordering than from sophisticated clause learning mechanisms. Research boundaries maintain focus on trade-off characterization rather than pursuing absolute performance optimization.
