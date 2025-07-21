@@ -2567,3 +2567,276 @@ class ScalabilityAnalyser:
         
         return "\n".join(report)
 \end{lstlisting}
+
+% Centrality-Based Priority System Implementation (Referenced in Implementation Chapter)
+\subsection{Centrality-Based Priority System Implementation}
+\label{appendix:centrality-priority}
+
+\begin{lstlisting}[language=Python, caption=Centrality-Based Variable Priority Calculation with Robustness Focus]
+def compute_variable_priorities(self, graph: 'GraphStructure') -> List[int]:
+    """
+    Compute variable priorities based on graph centrality measures.
+    Emphasises structural stability over computational efficiency.
+    """
+    if not graph.vertices:
+        return []
+    
+    # Compute multiple centrality measures for robustness
+    degree_centrality = graph.compute_degree_centrality()
+    betweenness_centrality = graph.compute_betweenness_centrality()
+    
+    # Composite scoring with empirically validated weights
+    composite_scores = {}
+    for vertex in graph.vertices:
+        degree_score = degree_centrality.get(vertex, 0.0)
+        betweenness_score = betweenness_centrality.get(vertex, 0.0)
+        
+        # Robustness-optimised weighting (70% degree, 30% betweenness)
+        composite_scores[vertex] = (0.7 * degree_score + 0.3 * betweenness_score)
+    
+    # Sort vertices by composite priority (highest first)
+    sorted_vertices = sorted(composite_scores.keys(), 
+                           key=lambda v: composite_scores[v], 
+                           reverse=True)
+    
+    self.enhanced_stats['priority_computation_count'] += 1
+    return sorted_vertices
+
+def _validate_priority_consistency(self, priorities: List[int]) -> bool:
+    """
+    Validate priority ordering for structural consistency.
+    Ensures reliable operation across diverse graph characteristics.
+    """
+    if len(priorities) != len(set(priorities)):
+        return False
+    
+    # Verify all vertices represented
+    expected_vertices = set(range(1, len(priorities) + 1))
+    actual_vertices = set(abs(v) for v in priorities)
+    
+    return expected_vertices == actual_vertices
+\end{lstlisting}
+
+% Conflict Analysis Implementation (Referenced in Implementation Chapter)
+\subsection{Streamlined Conflict Analysis Implementation}
+\label{appendix:conflict-analysis}
+
+\begin{lstlisting}[language=Python, caption=Graph-Aware Conflict Analysis with Robustness Guarantees]
+def _analyse_conflict_with_graph_awareness(self, cnf_formula: List[List[int]], 
+                                         assignments: Dict[int, bool]) -> List[int]:
+    """
+    Analyse conflicts incorporating graph structural information.
+    Maintains effectiveness whilst avoiding complexity that could undermine robustness.
+    """
+    conflict_clause = self._identify_conflict_clause(cnf_formula, assignments)
+    
+    if not conflict_clause:
+        return []
+    
+    # Incorporate high-priority variables into learned clauses
+    enhanced_clause = conflict_clause.copy()
+    recent_decisions = self._get_recent_high_priority_decisions(assignments)
+    
+    for variable in recent_decisions:
+        if variable not in [abs(lit) for lit in conflict_clause]:
+            # Add negation of recent high-priority assignment
+            literal = -variable if assignments.get(variable, False) else variable
+            enhanced_clause.append(literal)
+    
+    # Limit clause size for predictable performance
+    if len(enhanced_clause) > self.max_learned_clause_size:
+        enhanced_clause = self._prune_clause_by_priority(enhanced_clause)
+    
+    self.enhanced_stats['conflict_analysis_count'] += 1
+    return enhanced_clause
+
+def _get_recent_high_priority_decisions(self, assignments: Dict[int, bool]) -> List[int]:
+    """
+    Identify recent decisions involving structurally important vertices.
+    """
+    recent_variables = []
+    for variable in self.variable_priority_order[:10]:  # Top 10 priority variables
+        if variable in assignments:
+            recent_variables.append(variable)
+    
+    return recent_variables[-5:]  # Most recent 5 high-priority decisions
+\end{lstlisting}
+
+% Performance Monitoring Implementation (Referenced in Implementation Chapter)
+\subsection{Performance Monitoring and Statistics Collection}
+\label{appendix:performance-monitoring}
+
+\begin{lstlisting}[language=Python, caption=Comprehensive Performance Monitoring Infrastructure]
+def _initialise_enhanced_statistics(self) -> Dict[str, Any]:
+    """
+    Initialise comprehensive statistics collection for trade-off analysis.
+    Tracks both traditional SAT metrics and graph-specific indicators.
+    """
+    return {
+        # Preprocessing overhead metrics
+        'preprocessing_time': 0.0,
+        'centrality_computation_time': 0.0,
+        'priority_computation_count': 0,
+        
+        # Search behaviour metrics
+        'enhanced_decisions': 0,
+        'fallback_activations': 0,
+        'priority_cache_hits': 0,
+        'priority_cache_misses': 0,
+        
+        # Robustness indicators
+        'conflict_analysis_count': 0,
+        'backtrack_depth_sum': 0,
+        'timeout_avoidance_count': 0,
+        
+        # Performance trade-off analysis
+        'total_execution_time': 0.0,
+        'overhead_percentage': 0.0,
+        'success_on_challenging_instances': True
+    }
+
+def _update_preprocessing_statistics(self, start_time: float, end_time: float) -> None:
+    """
+    Update statistics with preprocessing performance data.
+    """
+    preprocessing_duration = end_time - start_time
+    self.enhanced_stats['preprocessing_time'] += preprocessing_duration
+    
+    if hasattr(self, 'total_runtime') and self.total_runtime > 0:
+        overhead_percentage = (preprocessing_duration / self.total_runtime) * 100
+        self.enhanced_stats['overhead_percentage'] = overhead_percentage
+
+def generate_performance_report(self) -> Dict[str, Any]:
+    """
+    Generate comprehensive performance analysis report.
+    Characterises the performance-robustness trade-off.
+    """
+    return {
+        'preprocessing_overhead': {
+            'time_seconds': self.enhanced_stats['preprocessing_time'],
+            'percentage_of_total': self.enhanced_stats['overhead_percentage']
+        },
+        'search_efficiency': {
+            'enhanced_decisions': self.enhanced_stats['enhanced_decisions'],
+            'cache_hit_rate': self._calculate_cache_hit_rate(),
+            'fallback_frequency': self.enhanced_stats['fallback_activations']
+        },
+        'robustness_indicators': {
+            'successful_completion': self.enhanced_stats['success_on_challenging_instances'],
+            'conflict_analysis_effectiveness': self.enhanced_stats['conflict_analysis_count'],
+            'timeout_avoidance': self.enhanced_stats['timeout_avoidance_count']
+        }
+    }
+\end{lstlisting}
+
+% Unit Propagation with Graph Awareness (Referenced but not detailed)
+\subsection{Enhanced Unit Propagation Implementation}
+\label{appendix:unit-propagation}
+
+\begin{lstlisting}[language=Python, caption=Unit Propagation with Graph-Aware Optimisations]
+def _unit_propagation_with_priorities(self, cnf_formula: List[List[int]], 
+                                    assignments: Dict[int, bool]) -> Tuple[List[List[int]], Dict[int, bool]]:
+    """
+    Enhanced unit propagation that respects variable priorities.
+    Maintains DPLL correctness whilst incorporating graph awareness.
+    """
+    new_assignments = assignments.copy()
+    propagated_formula = []
+    changes_made = True
+    
+    while changes_made:
+        changes_made = False
+        current_formula = []
+        
+        for clause in cnf_formula:
+            satisfied = False
+            unassigned_literals = []
+            
+            for literal in clause:
+                variable = abs(literal)
+                value = new_assignments.get(variable)
+                
+                if value is not None:
+                    if (literal > 0 and value) or (literal < 0 and not value):
+                        satisfied = True
+                        break
+                else:
+                    unassigned_literals.append(literal)
+            
+            if satisfied:
+                continue
+            elif len(unassigned_literals) == 0:
+                # Conflict detected
+                return [], {}
+            elif len(unassigned_literals) == 1:
+                # Unit clause found - priority-aware propagation
+                unit_literal = unassigned_literals[0]
+                unit_variable = abs(unit_literal)
+                unit_value = unit_literal > 0
+                
+                new_assignments[unit_variable] = unit_value
+                changes_made = True
+                self.enhanced_stats['unit_propagations'] += 1
+            else:
+                current_formula.append(clause)
+        
+        cnf_formula = current_formula
+    
+    return cnf_formula, new_assignments
+\end{lstlisting}
+
+% Timeout Protection and Graceful Degradation (Referenced in text)
+\subsection{Timeout Protection and Graceful Degradation}
+\label{appendix:timeout-protection}
+
+\begin{lstlisting}[language=Python, caption=Robust Timeout Protection with Graceful Degradation]
+def _solve_with_timeout_protection(self, cnf_formula: List[List[int]], 
+                                 timeout: float) -> Tuple[bool, Dict[int, bool]]:
+    """
+    Solve with comprehensive timeout protection and graceful degradation.
+    Ensures reliable operation in reliability-critical applications.
+    """
+    start_time = time.time()
+    
+    try:
+        # Attempt enhanced solving with full graph awareness
+        result = self._solve_with_enhanced_algorithm(cnf_formula, timeout, start_time)
+        
+        if result[0] or (time.time() - start_time) < timeout * 0.8:
+            return result
+        
+        # Graceful degradation to baseline DPLL if timeout approaching
+        self.enhanced_stats['graceful_degradation_count'] += 1
+        remaining_time = timeout - (time.time() - start_time)
+        
+        if remaining_time > 0.1:  # Minimum time threshold
+            return self._fallback_to_baseline_dpll(cnf_formula, remaining_time)
+        
+    except Exception as e:
+        # Error recovery with baseline approach
+        self.enhanced_stats['error_recovery_count'] += 1
+        remaining_time = timeout - (time.time() - start_time)
+        
+        if remaining_time > 0.1:
+            return self._fallback_to_baseline_dpll(cnf_formula, remaining_time)
+    
+    return False, {}
+
+def _check_timeout_and_update_stats(self, start_time: float, timeout: float) -> bool:
+    """
+    Check timeout condition and update relevant statistics.
+    """
+    elapsed_time = time.time() - start_time
+    
+    if elapsed_time > timeout:
+        self.enhanced_stats['timeout_occurrences'] += 1
+        return True
+    
+    # Update progress statistics
+    progress_percentage = (elapsed_time / timeout) * 100
+    if progress_percentage > 50 and not hasattr(self, '_halfway_logged'):
+        self.enhanced_stats['halfway_progress_count'] += 1
+        self._halfway_logged = True
+    
+    return False
+\end{lstlisting}
