@@ -1,6 +1,162 @@
 \appendix
 
-\section{Enhanced CDCL Engine Code Implementations}
+\section{Graph-Aware SAT Solving Implementation Code}
+\label{appendix:graph-aware-implementation}
+
+\subsection{Enhanced Solver Architecture for Trade-off Management}
+\label{appendix:enhanced-solver-architecture}
+
+\begin{lstlisting}[language=Python, caption=Enhanced Solver Architecture for Performance-Robustness Trade-offs]
+class GraphAwareSATSolver(DPLLSolver):
+    """
+    Graph-aware SAT solver optimized for trading average-case performance 
+    for worst-case robustness in graph coloring applications.
+    """
+    
+    def __init__(self, robustness_mode: bool = True, verbose: bool = False):
+        super().__init__(verbose=verbose)
+        self.robustness_mode = robustness_mode
+        
+        # Trade-off management components
+        self.overhead_tracker = OverheadTracker()
+        self.robustness_monitor = RobustnessMonitor()
+        
+        # Graph-aware processing components
+        self.graph_analyzer = None
+        self.centrality_computer = None
+        self.priority_manager = None
+        
+        # Performance-robustness statistics
+        self.tradeoff_stats = {
+            'preprocessing_overhead': 0.0,
+            'analysis_time': 0.0,
+            'enhanced_decisions': 0,
+            'robustness_activations': 0,
+            'fallback_events': 0,
+            'success_rate_improvement': 0.0
+        }
+        
+        # Configuration for controlled trade-off behavior
+        self.overhead_budget = 1.5  # Maximum acceptable overhead factor
+        self.robustness_threshold = 0.95  # Minimum success rate target
+        
+    def solve_with_tradeoff_analysis(self, vertices: List[int], 
+                                   edges: List[Tuple[int, int]], 
+                                   num_colors: int, 
+                                   timeout: float = 300.0) -> TradeoffResult:
+        """
+        Main solving method with comprehensive trade-off analysis and validation.
+        """
+        start_time = time.time()
+        
+        # Initialize trade-off monitoring
+        self.overhead_tracker.start_monitoring()
+        self.robustness_monitor.initialize(vertices, edges, num_colors)
+        
+        # Phase 1: Graph analysis with overhead tracking
+        if self.robustness_mode:
+            analysis_result = self._perform_graph_analysis(vertices, edges)
+            self.tradeoff_stats['analysis_time'] = analysis_result.time_cost
+            self.tradeoff_stats['preprocessing_overhead'] = analysis_result.overhead_factor
+        else:
+            analysis_result = None
+        
+        # Phase 2: SAT encoding with robustness enhancements
+        cnf_formula = self._encode_graph_coloring_with_enhancements(
+            vertices, edges, num_colors, analysis_result
+        )
+        
+        # Phase 3: Solving with trade-off monitoring
+        solving_start = time.time()
+        is_satisfiable, assignment = self._solve_with_robustness_tracking(
+            cnf_formula, timeout - (solving_start - start_time)
+        )
+        solving_time = time.time() - solving_start
+        
+        # Phase 4: Trade-off analysis and result construction
+        total_time = time.time() - start_time
+        tradeoff_analysis = self._analyze_performance_robustness_tradeoff(
+            total_time, solving_time, is_satisfiable
+        )
+        
+        return TradeoffResult(
+            satisfiable=is_satisfiable,
+            assignment=self._convert_sat_to_coloring(assignment, vertices, num_colors),
+            tradeoff_analysis=tradeoff_analysis,
+            robustness_metrics=self.robustness_monitor.get_metrics(),
+            overhead_breakdown=self.overhead_tracker.get_breakdown()
+        )
+\end{lstlisting}
+
+\subsection{Threshold Analysis Implementation}
+\label{appendix:threshold-analysis}
+
+\begin{lstlisting}[language=Python, caption=Threshold Analysis for Trade-off Boundaries]
+class ThresholdAnalyser:
+    """
+    Evaluates break-even points where enhanced solver overhead becomes 
+    justified by reliability improvements across different operational contexts.
+    """
+    
+    def __init__(self):
+        self.threshold_results = []
+        self.sensitivity_data = []
+        
+    def evaluate_deployment_thresholds(self, test_suite: List[Dict], 
+                                     baseline_solver, enhanced_solver) -> Dict:
+        """
+        Systematic threshold identification for deployment guidance.
+        """
+        threshold_analysis = {
+            'parameter_sweeps': {},
+            'break_even_points': {},
+            'deployment_recommendations': {},
+            'sensitivity_analysis': {}
+        }
+        
+        # Graph density threshold analysis
+        density_thresholds = self._analyze_density_thresholds(
+            test_suite, baseline_solver, enhanced_solver
+        )
+        threshold_analysis['parameter_sweeps']['density'] = density_thresholds
+        
+        # Problem size threshold analysis
+        size_thresholds = self._analyze_size_thresholds(
+            test_suite, baseline_solver, enhanced_solver
+        )
+        threshold_analysis['parameter_sweeps']['size'] = size_thresholds
+        
+        # Connectivity threshold analysis
+        connectivity_thresholds = self._analyze_connectivity_thresholds(
+            test_suite, baseline_solver, enhanced_solver
+        )
+        threshold_analysis['parameter_sweeps']['connectivity'] = connectivity_thresholds
+        
+        # Calculate break-even points
+        threshold_analysis['break_even_points'] = self._calculate_break_even_points(
+            threshold_analysis['parameter_sweeps']
+        )
+        
+        # Generate deployment recommendations
+        threshold_analysis['deployment_recommendations'] = self._generate_deployment_guidance(
+            threshold_analysis['break_even_points']
+        )
+        
+        # Perform sensitivity analysis
+        threshold_analysis['sensitivity_analysis'] = self._perform_sensitivity_analysis(
+            threshold_analysis['parameter_sweeps']
+        )
+        
+        return threshold_analysis
+    
+    def _analyze_density_thresholds(self, test_suite: List[Dict], 
+                                  baseline_solver, enhanced_solver) -> Dict:
+        """
+        Analyse how graph density affects trade-off attractiveness.
+        """
+        density_analysis = {
+            'density_ranges': [],
+            'overhead_ratios': [],
 
 \subsection{Enhanced CDCL Solver Class Architecture}
 \label{appendix:enhanced-cdcl-class}
@@ -70,74 +226,262 @@ def _initialize_graph_analysis(self, vertices: List[int], edges: List[Tuple[int,
             sat_variable = vertex * num_colors + color + 1
             self.variable_priority_order.append(sat_variable)
     
-    self.enhanced_stats['graph_analysis_time'] = time.time() - start_time
+    analysis_time = time.time() - start_time
+    self.enhanced_stats['graph_analysis_time'] = analysis_time
+    
+    if self.verbose:
+        print(f"Graph analysis completed in {analysis_time:.3f}s")
+        print(f"Computed priorities for {len(vertices)} vertices")
 \end{lstlisting}
 
-\subsection{Graph-Aware DPLL Search Implementation}
+\subsection{Graph-Aware Search Algorithm Implementation}
 \label{appendix:graph-aware-search}
 
-\begin{lstlisting}[language=Python, caption=Graph-Aware DPLL Search Implementation]
-def _solve_with_graph_awareness(self, cnf_formula: List[List[int]], 
-                               timeout: float) -> Tuple[bool, Dict[int, bool]]:
-    """Main solving loop with graph-aware enhancements"""
+\begin{lstlisting}[language=Python, caption=Graph-Aware Search Algorithm with Robustness Focus]
+def _choose_variable_with_graph_awareness(self, cnf_formula: List[List[int]], 
+                                        assignments: Dict[int, bool]) -> Optional[int]:
+    """Enhanced variable selection using graph priorities with fallback mechanisms"""
+    if not self.variable_priority_order:
+        self.enhanced_stats['fallback_activations'] += 1
+        return self._pick_unassigned_variable(cnf_formula, assignments)
+    
+    # Check priority cache for previously computed selections
+    cache_key = tuple(sorted(assignments.keys()))
+    if hasattr(self, 'priority_cache') and cache_key in self.priority_cache:
+        self.enhanced_stats['priority_cache_hits'] += 1
+        cached_variable = self.priority_cache[cache_key]
+        if cached_variable not in assignments:
+            return cached_variable
+    
+    # Find highest priority unassigned variable
+    for variable in self.variable_priority_order:
+        if variable not in assignments:
+            # Cache the selection for future use
+            if not hasattr(self, 'priority_cache'):
+                self.priority_cache = {}
+            self.priority_cache[cache_key] = variable
+            return variable
+    
+    # Fallback to baseline selection if no priority variables remain
+    self.enhanced_stats['fallback_activations'] += 1
+    return self._pick_unassigned_variable(cnf_formula, assignments)
+
+def _solve_with_robustness_tracking(self, cnf_formula: List[List[int]], 
+                                  timeout: float) -> Tuple[bool, Dict[int, bool]]:
+    """
+    Core solving algorithm with robustness tracking and timeout protection.
+    Implements graph-aware DPLL with comprehensive failure prevention.
+    """
+    start_time = time.time()
     assignments = {}
     decision_level = 0
     decision_stack = []
-    start_time = time.time()
     
-    while time.time() - start_time < timeout:
-        # Apply unit propagation using inherited DPLL infrastructure
-        propagated_formula, new_assignments = self._unit_propagation(
-            cnf_formula, assignments.copy())
-        assignments.update(new_assignments)
+    while True:
+        # Timeout protection for robustness
+        if time.time() - start_time > timeout:
+            self.enhanced_stats['timeout_occurred'] = True
+            return False, {}
         
-        # Check termination conditions
-        if self._is_formula_satisfied(propagated_formula):
+        # Unit propagation with enhanced tracking
+        try:
+            assignments = self._unit_propagate_with_tracking(cnf_formula, assignments)
+        except Exception as e:
+            self.enhanced_stats['propagation_errors'] = self.enhanced_stats.get('propagation_errors', 0) + 1
+            return False, {}
+        
+        # Check formula status
+        status = self._check_formula_status(cnf_formula, assignments)
+        
+        if status == "SATISFIED":
+            self.enhanced_stats['successful_completion'] = True
             return True, assignments
-        
-        if self._has_empty_clause(propagated_formula):
+        elif status == "UNSATISFIED":
             if decision_level == 0:
                 return False, {}
             
-            # Backtrack with conflict analysis
-            conflict_clause = self._extract_conflict_clause(propagated_formula)
-            learned_clause = self._analyze_conflict_graph_aware(
-                conflict_clause, decision_stack)
-            
-            if learned_clause:
-                cnf_formula.append(learned_clause)
-                self.enhanced_stats['conflict_clauses_learned'] += 1
-            
-            # Perform backtrack
-            assignments, decision_level, decision_stack = self._backtrack_to_level(
-                assignments, decision_stack, decision_level - 1)
+            # Enhanced backtracking with conflict analysis
+            try:
+                assignments, decision_level, decision_stack = self._enhanced_backtrack(
+                    assignments, decision_level, decision_stack, cnf_formula
+                )
+            except Exception as e:
+                self.enhanced_stats['backtrack_errors'] = self.enhanced_stats.get('backtrack_errors', 0) + 1
+                return False, {}
             continue
         
-        # Enhanced variable selection using graph priorities
-        next_variable = self._select_variable_graph_aware(
-            propagated_formula, assignments)
-        
-        if next_variable is None:
+        # Graph-aware variable selection
+        variable = self._choose_variable_with_graph_awareness(cnf_formula, assignments)
+        if variable is None:
             return False, {}
         
-        # Make decision and continue search
-        decision_level += 1
-        decision_stack.append((next_variable, True, decision_level))
-        assignments[next_variable] = True
-        cnf_formula = self._apply_assignment(propagated_formula, next_variable, True)
+        # Enhanced decision making with robustness considerations
+        value = self._make_robust_decision(variable, cnf_formula, assignments)
         
+        # Record decision and continue
+        assignments[variable] = value
+        decision_level += 1
+        decision_stack.append((variable, value, decision_level))
         self.enhanced_stats['enhanced_decisions'] += 1
+
+def _make_robust_decision(self, variable: int, 
+                        cnf_formula: List[List[int]], 
+                        assignments: Dict[int, bool]) -> bool:
+    """
+    Make variable assignment decisions optimised for robustness rather than speed.
+    """
+    # Count positive and negative occurrences in unresolved clauses
+    positive_count = 0
+    negative_count = 0
     
-    return False, {}  # Timeout exceeded
+    for clause in cnf_formula:
+        # Skip already satisfied clauses
+        if any(assignments.get(abs(lit), None) == (lit > 0) for lit in clause 
+               if abs(lit) in assignments):
+            continue
+        
+        # Count occurrences in unresolved clauses
+        if variable in clause:
+            positive_count += 1
+        elif -variable in clause:
+            negative_count += 1
+    
+    # Robust heuristic: choose assignment that satisfies more clauses
+    # In case of tie, prefer positive assignment for consistency
+    if positive_count >= negative_count:
+        return True
+    else:
+        return False
 \end{lstlisting}
 
-\subsection{Graph-Aware Conflict Analysis}
-\label{appendix:conflict-analysis}
+\subsection{Memory Management and Profiling Implementation}
+\label{appendix:memory-management}
 
-\begin{lstlisting}[language=Python, caption=Graph-Aware Conflict Analysis]
-def _analyze_conflict_graph_aware(self, conflict_clause: List[int], 
-                                decision_stack: List[Tuple[int, bool, int]]) -> List[int]:
-    """Analyze conflicts with consideration for graph structure"""
+\begin{lstlisting}[language=Python, caption=Memory Management and Profiling System]
+class MemoryProfiler:
+    """
+    Comprehensive memory profiling and management for SAT solver components.
+    Tracks memory usage patterns to ensure predictable resource consumption.
+    """
+    
+    def __init__(self, enable_profiling: bool = True):
+        self.enable_profiling = enable_profiling
+        self.memory_snapshots = []
+        self.component_usage = defaultdict(int)
+        self.peak_memory = 0
+        self.baseline_memory = 0
+    
+    def track_component_memory(self, component_name: str, 
+                             data_structure: Any) -> None:
+        """Track memory usage of specific solver components"""
+        if not self.enable_profiling:
+            return
+        
+        memory_usage = self._estimate_structure_size(data_structure)
+        self.component_usage[component_name] = memory_usage
+        
+        # Update peak memory tracking
+        total_usage = sum(self.component_usage.values())
+        self.peak_memory = max(self.peak_memory, total_usage)
+    
+    def _estimate_structure_size(self, obj: Any) -> int:
+        """
+        Estimate memory usage of data structures without external dependencies.
+        Provides approximate but consistent memory tracking.
+        """
+        import sys
+        
+        if isinstance(obj, dict):
+            size = sys.getsizeof(obj)
+            for key, value in obj.items():
+                size += sys.getsizeof(key) + sys.getsizeof(value)
+            return size
+        elif isinstance(obj, (list, tuple, set)):
+            size = sys.getsizeof(obj)
+            for item in obj:
+                size += sys.getsizeof(item)
+            return size
+        else:
+            return sys.getsizeof(obj)
+    
+    def take_memory_snapshot(self, operation_name: str) -> None:
+        """Capture memory state at specific solver operations"""
+        if not self.enable_profiling:
+            return
+        
+        try:
+            import psutil
+            import os
+            
+            process = psutil.Process(os.getpid())
+            memory_info = process.memory_info()
+            
+            snapshot = {
+                'operation': operation_name,
+                'rss_bytes': memory_info.rss,
+                'vms_bytes': memory_info.vms,
+                'component_breakdown': dict(self.component_usage),
+                'timestamp': time.time()
+            }
+            
+            self.memory_snapshots.append(snapshot)
+            
+        except ImportError:
+            # Fallback tracking without psutil
+            snapshot = {
+                'operation': operation_name,
+                'estimated_usage': sum(self.component_usage.values()),
+                'component_breakdown': dict(self.component_usage),
+                'timestamp': time.time()
+            }
+            
+            self.memory_snapshots.append(snapshot)
+    
+    def generate_memory_report(self) -> Dict[str, Any]:
+        """Generate comprehensive memory usage analysis"""
+        if not self.memory_snapshots:
+            return {'error': 'No memory snapshots available'}
+        
+        if 'rss_bytes' in self.memory_snapshots[0]:
+            peak_memory = max(snapshot['rss_bytes'] for snapshot in self.memory_snapshots)
+            memory_growth = (self.memory_snapshots[-1]['rss_bytes'] - 
+                           self.memory_snapshots[0]['rss_bytes'])
+            
+            return {
+                'peak_memory_mb': peak_memory / (1024 * 1024),
+                'memory_growth_mb': memory_growth / (1024 * 1024),
+                'component_breakdown': dict(self.component_usage),
+                'snapshot_count': len(self.memory_snapshots),
+                'profiling_overhead_estimate': len(self.memory_snapshots) * 0.1  # MB
+            }
+        else:
+            # Fallback report format
+            peak_estimated = max(snapshot['estimated_usage'] for snapshot in self.memory_snapshots)
+            
+            return {
+                'peak_estimated_bytes': peak_estimated,
+                'component_breakdown': dict(self.component_usage),
+                'snapshot_count': len(self.memory_snapshots),
+                'note': 'Estimated values (psutil unavailable)'
+            }
+    
+    def reset_profiling(self):
+        """Reset all profiling data for fresh measurement"""
+        self.memory_snapshots.clear()
+        self.component_usage.clear()
+        self.peak_memory = 0
+\end{lstlisting}
+
+\subsection{Robust Conflict Analysis Implementation}
+\label{appendix:robust-conflict-analysis}
+
+\begin{lstlisting}[language=Python, caption=Robust Conflict Analysis for Consistent Performance]
+def _enhanced_conflict_analysis(self, conflict_clause: List[int], 
+                              decision_stack: List[Tuple[int, bool, int]]) -> List[int]:
+    """
+    Enhanced conflict analysis incorporating graph structural information
+    for improved learned clause quality and robustness.
+    """
     if not decision_stack or not self.variable_priority_order:
         return conflict_clause
     
@@ -146,7 +490,7 @@ def _analyze_conflict_graph_aware(self, conflict_clause: List[int],
     for variable, value, level in decision_stack[-5:]:  # Last 5 decisions
         recent_variables.add(abs(variable))
     
-    # Prioritize high-priority variables in conflict clause
+    # Prioritise high-priority variables in conflict clause
     priority_map = {var: idx for idx, var in enumerate(self.variable_priority_order)}
     
     conflict_literals = []
@@ -164,15 +508,152 @@ def _analyze_conflict_graph_aware(self, conflict_clause: List[int],
         return conflict_clause
     
     return conflict_literals
+
+def _enhanced_backtrack(self, assignments: Dict[int, bool], 
+                       decision_level: int, 
+                       decision_stack: List[Tuple[int, bool, int]], 
+                       cnf_formula: List[List[int]]) -> Tuple[Dict[int, bool], int, List]:
+    """
+    Enhanced backtracking with conflict analysis and robustness improvements.
+    """
+    if not decision_stack:
+        return assignments, 0, []
+    
+    # Identify conflict and perform analysis
+    conflict_clause = self._identify_conflict_clause(cnf_formula, assignments)
+    learned_clause = self._enhanced_conflict_analysis(conflict_clause, decision_stack)
+    
+    # Backtrack to appropriate level
+    backtrack_level = max(0, decision_level - 1)
+    
+    # Remove assignments from current level
+    new_assignments = assignments.copy()
+    new_decision_stack = []
+    
+    for variable, value, level in decision_stack:
+        if level <= backtrack_level:
+            new_decision_stack.append((variable, value, level))
+        else:
+            # Remove assignment from current level
+            if variable in new_assignments:
+                del new_assignments[variable]
+    
+    # Add learned clause to formula for future conflict avoidance
+    if learned_clause and len(learned_clause) <= 10:  # Limit clause size for efficiency
+        cnf_formula.append(learned_clause)
+        self.enhanced_stats['learned_clauses'] = self.enhanced_stats.get('learned_clauses', 0) + 1
+    
+    return new_assignments, backtrack_level, new_decision_stack
+
+def _identify_conflict_clause(self, cnf_formula: List[List[int]], 
+                            assignments: Dict[int, bool]) -> List[int]:
+    """
+    Identify the conflict clause for enhanced conflict analysis.
+    """
+    for clause in cnf_formula:
+        if all(assignments.get(abs(lit), None) is not None and 
+               assignments[abs(lit)] != (lit > 0) for lit in clause):
+            return clause
+    
+    # Return empty conflict if none found
+    return []
 \end{lstlisting}
 
-\subsection{Enhanced Performance Monitoring}
-\label{appendix:performance-monitoring}
+\subsection{Integration Challenge Resolution Implementation}
+\label{appendix:integration-challenges}
 
-\begin{lstlisting}[language=Python, caption=Enhanced Performance Monitoring]
+\begin{lstlisting}[language=Python, caption=Integration Challenge Resolution Implementation]
+def _dpll_with_enhanced_ordering(self, cnf_formula: List[List[int]], 
+                               assignments: Dict[int, bool]) -> Tuple[bool, Dict[int, bool]]:
+    """DPLL with graph-aware variable ordering integration"""
+    # Preserve original DPLL structure whilst enhancing variable selection
+    propagated_formula, new_assignments = self._unit_propagation(cnf_formula, assignments.copy())
+    assignments.update(new_assignments)
+    
+    # Maintain DPLL termination conditions
+    if self._is_formula_satisfied(propagated_formula, assignments):
+        return True, assignments
+    
+    if self._has_empty_clause(propagated_formula, assignments):
+        return False, {}
+    
+    # Enhanced variable selection with fallback
+    variable = self._choose_variable_with_graph_awareness(propagated_formula, assignments)
+    if variable is None:
+        return False, {}
+    
+    # Try positive assignment first
+    positive_assignments = assignments.copy()
+    positive_assignments[variable] = True
+    
+    satisfiable, solution = self._dpll_with_enhanced_ordering(
+        propagated_formula, positive_assignments
+    )
+    
+    if satisfiable:
+        return True, solution
+    
+    # Try negative assignment
+    negative_assignments = assignments.copy()
+    negative_assignments[variable] = False
+    
+    return self._dpll_with_enhanced_ordering(propagated_formula, negative_assignments)
+
+def _synchronize_with_baseline(self, baseline_solver: 'DPLLSolver') -> None:
+    """
+    Synchronise enhanced solver state with baseline for compatibility testing.
+    Ensures consistent behaviour whilst maintaining robustness improvements.
+    """
+    # Synchronise common statistics
+    if hasattr(baseline_solver, 'statistics'):
+        shared_stats = {}
+        for key in ['decisions', 'conflicts', 'unit_propagations']:
+            if key in baseline_solver.statistics:
+                shared_stats[key] = baseline_solver.statistics[key]
+        
+        # Merge with enhanced statistics
+        self.enhanced_stats.update(shared_stats)
+    
+    # Synchronise timeout handling
+    if hasattr(baseline_solver, 'timeout_occurred'):
+        self.enhanced_stats['baseline_timeout'] = baseline_solver.timeout_occurred
+    
+    # Maintain interface compatibility
+    if hasattr(baseline_solver, 'verbose'):
+        self.verbose = baseline_solver.verbose
+
+def _validate_interface_compatibility(self) -> Dict[str, bool]:
+    """
+    Validate that enhanced solver maintains interface compatibility
+    with existing solver infrastructure.
+    """
+    compatibility_checks = {
+        'dpll_solver_inheritance': isinstance(self, DPLLSolver),
+        'solve_method_present': hasattr(self, 'solve'),
+        'statistics_accessible': hasattr(self, 'get_statistics'),
+        'verbose_mode_supported': hasattr(self, 'verbose'),
+        'timeout_handling_present': 'timeout_occurred' in dir(self) or hasattr(self, 'enhanced_stats')
+    }
+    
+    # Additional method signature checks
+    import inspect
+    
+    if hasattr(self, 'solve'):
+        solve_signature = inspect.signature(self.solve)
+        compatibility_checks['solve_signature_valid'] = len(solve_signature.parameters) >= 1
+    
+    return compatibility_checks
+\end{lstlisting>
+
+\subsection{Comprehensive Statistics and Monitoring}
+\label{appendix:comprehensive-statistics}
+
+\begin{lstlisting}[language=Python, caption=Comprehensive Statistics and Monitoring Implementation]
 def get_comprehensive_statistics(self) -> Dict[str, Any]:
     """Retrieve detailed solving statistics including graph-aware metrics"""
-    base_stats = self.get_statistics()  # Inherited DPLL statistics
+    base_stats = {}
+    if hasattr(super(), 'get_statistics'):
+        base_stats = super().get_statistics()
     
     combined_stats = {
         # Traditional SAT metrics
@@ -181,2540 +662,775 @@ def get_comprehensive_statistics(self) -> Dict[str, Any]:
         'unit_propagations': base_stats.get('unit_propagations', 0),
         
         # Graph-aware enhancements
-        'graph_analysis_time': self.enhanced_stats['graph_analysis_time'],
-        'enhanced_decisions': self.enhanced_stats['enhanced_decisions'],
-        'priority_cache_hits': self.enhanced_stats['priority_cache_hits'],
-        'fallback_activations': self.enhanced_stats['fallback_activations'],
+        'graph_analysis_time': self.enhanced_stats.get('graph_analysis_time', 0.0),
+        'enhanced_decisions': self.enhanced_stats.get('enhanced_decisions', 0),
+        'priority_cache_hits': self.enhanced_stats.get('priority_cache_hits', 0),
+        'fallback_activations': self.enhanced_stats.get('fallback_activations', 0),
+        'learned_clauses': self.enhanced_stats.get('learned_clauses', 0),
+        
+        # Robustness metrics
+        'successful_completion': self.enhanced_stats.get('successful_completion', False),
+        'timeout_occurred': self.enhanced_stats.get('timeout_occurred', False),
+        'propagation_errors': self.enhanced_stats.get('propagation_errors', 0),
+        'backtrack_errors': self.enhanced_stats.get('backtrack_errors', 0),
         
         # Performance ratios
-        'enhancement_ratio': (self.enhanced_stats['enhanced_decisions'] / 
-                            max(base_stats.get('decisions', 1), 1)),
-        'analysis_overhead': (self.enhanced_stats['graph_analysis_time'] / 
-                            max(self.enhanced_stats.get('total_time', 1), 1))
+        'enhancement_ratio': 0.0,
+        'analysis_overhead': 0.0,
+        'cache_hit_rate': 0.0
     }
+    
+    # Calculate derived metrics
+    total_decisions = max(combined_stats['decisions'], 1)
+    combined_stats['enhancement_ratio'] = (
+        combined_stats['enhanced_decisions'] / total_decisions
+    )
+    
+    total_time = self.enhanced_stats.get('total_time', 1.0)
+    combined_stats['analysis_overhead'] = (
+        combined_stats['graph_analysis_time'] / total_time
+    )
+    
+    total_selections = combined_stats['enhanced_decisions'] + combined_stats['fallback_activations']
+    if total_selections > 0:
+        combined_stats['cache_hit_rate'] = (
+            combined_stats['priority_cache_hits'] / total_selections
+        )
     
     return combined_stats
+
+def generate_performance_report(self) -> str:
+    """
+    Generate human-readable performance report for analysis and debugging.
+    """
+    stats = self.get_comprehensive_statistics()
+    
+    report = []
+    report.append("=== Enhanced SAT Solver Performance Report ===")
+    report.append("")
+    
+    # Basic solving statistics
+    report.append("Basic Solving Statistics:")
+    report.append(f"  Total Decisions: {stats['decisions']}")
+    report.append(f"  Enhanced Decisions: {stats['enhanced_decisions']}")
+    report.append(f"  Conflicts: {stats['conflicts']}")
+    report.append(f"  Unit Propagations: {stats['unit_propagations']}")
+    report.append(f"  Learned Clauses: {stats['learned_clauses']}")
+    report.append("")
+    
+    # Graph-aware performance
+    report.append("Graph-Aware Performance:")
+    report.append(f"  Graph Analysis Time: {stats['graph_analysis_time']:.3f}s")
+    report.append(f"  Priority Cache Hits: {stats['priority_cache_hits']}")
+    report.append(f"  Fallback Activations: {stats['fallback_activations']}")
+    report.append(f"  Cache Hit Rate: {stats['cache_hit_rate']:.2%}")
+    report.append("")
+    
+    # Robustness metrics
+    report.append("Robustness Metrics:")
+    report.append(f"  Successful Completion: {stats['successful_completion']}")
+    report.append(f"  Timeout Occurred: {stats['timeout_occurred']}")
+    report.append(f"  Propagation Errors: {stats['propagation_errors']}")
+    report.append(f"  Backtrack Errors: {stats['backtrack_errors']}")
+    report.append("")
+    
+    # Performance ratios
+    report.append("Performance Ratios:")
+    report.append(f"  Enhancement Ratio: {stats['enhancement_ratio']:.2%}")
+    report.append(f"  Analysis Overhead: {stats['analysis_overhead']:.2%}")
+    report.append("")
+    
+    # Recommendations
+    report.append("Recommendations:")
+    if stats['fallback_activations'] > stats['enhanced_decisions'] * 0.2:
+        report.append("  - Consider adjusting graph analysis threshold")
+    if stats['cache_hit_rate'] < 0.3:
+        report.append("  - Cache efficiency could be improved")
+    if stats['analysis_overhead'] > 0.25:
+        report.append("  - Graph analysis overhead is significant")
+    if not stats['successful_completion'] and not stats['timeout_occurred']:
+        report.append("  - Investigate solving failures")
+    
+    return "\n".join(report)
 \end{lstlisting}
 
-\section{Specialized Graph Coloring Features Code}
-
-\subsection{Optimized Graph Structure Construction}
-\label{appendix:graph-structure}
-
-\begin{lstlisting}[language=Python, caption=Optimized Graph Structure Construction]
-def _build_adjacency_structure(self):
-    """Build efficient adjacency representation for graph operations"""
-    self.adjacency = defaultdict(set)
-    self.degree_map = {}
-    
-    # Single-pass construction with degree tracking
-    for u, v in self.edges:
-        self.adjacency[u].add(v)
-        self.adjacency[v].add(u)
-        
-    # Compute degrees during construction to avoid recomputation
-    for vertex in self.vertices:
-        self.degree_map[vertex] = len(self.adjacency[vertex])
-
-def compute_degree_centrality(self) -> Dict[int, float]:
-    """Optimized degree centrality with cached degree lookups"""
-    n = len(self.vertices)
-    if n <= 1:
-        return {v: 0.0 for v in self.vertices}
-    
-    # Leverage pre-computed degrees for O(V) complexity
-    normalization_factor = n - 1
-    return {vertex: self.degree_map[vertex] / normalization_factor 
-            for vertex in self.vertices}
-\end{lstlisting}
-
-\subsection{Symmetry Breaking Constraint Generation}
-\label{appendix:symmetry-breaking}
-
-\begin{lstlisting}[language=Python, caption=Symmetry Breaking Constraint Generation]
-def _generate_symmetry_breaking_clauses(self, vertices: List[int], 
-                                      num_colors: int) -> List[List[int]]:
-    """Generate lexicographic symmetry breaking constraints"""
-    clauses = []
-    
-    if not vertices or num_colors <= 1:
-        return clauses
-    
-    # Force first vertex to use color 0 (fixes one symmetry)
-    first_vertex = min(vertices)
-    first_color_variable = first_vertex * num_colors + 1
-    clauses.append([first_color_variable])
-    
-    # Cascading color usage constraints
-    for color_idx in range(1, num_colors):
-        # If any vertex uses color k, some vertex must use color k-1
-        color_k_literals = [v * num_colors + color_idx + 1 for v in vertices]
-        color_k_minus_1_literals = [v * num_colors + color_idx for v in vertices]
-        
-        # Create implication: (OR color_k) -> (OR color_k-1)
-        for color_k_lit in color_k_literals:
-            clause = [-color_k_lit] + color_k_minus_1_literals
-            clauses.append(clause)
-    
-    return clauses
-\end{lstlisting}
-
-\subsection{Enhanced Encoding Integration}
-\label{appendix:encoding-integration}
-
-\begin{lstlisting}[language=Python, caption=Enhanced Encoding Integration]
-def create_enhanced_encoding(self, vertices: List[int], edges: List[Tuple[int, int]], 
-                           num_colors: int) -> List[List[int]]:
-    """Create CNF with integrated graph-aware optimizations"""
-    # Generate base encoding using existing infrastructure
-    base_cnf = create_graph_coloring_cnf(vertices, edges, num_colors)
-    
-    if self.enable_graph_awareness:
-        # Add symmetry breaking constraints
-        symmetry_clauses = self._generate_symmetry_breaking_clauses(vertices, num_colors)
-        base_cnf.extend(symmetry_clauses)
-        
-        # Add dominance-based reductions
-        dominated_clauses = self._generate_dominance_constraints(vertices, edges, num_colors)
-        base_cnf.extend(dominated_clauses)
-        
-        self.enhanced_stats['preprocessing_reductions'] += len(symmetry_clauses) + len(dominated_clauses)
-    
-    return base_cnf
-\end{lstlisting}
-
-\subsection{Adaptive Preprocessing Pipeline}
-\label{appendix:adaptive-preprocessing}
-
-\begin{lstlisting}[language=Python, caption=Adaptive Preprocessing Pipeline]
-def preprocess_graph_coloring_instance(self, vertices: List[int], 
-                                     edges: List[Tuple[int, int]], 
-                                     num_colors: int) -> Tuple[List[int], List[Tuple[int, int]], int]:
-    """Adaptive preprocessing with complexity management"""
-    preprocessing_start = time.time()
-    original_vertex_count = len(vertices)
-    
-    # Phase 1: Structural reductions (always applied)
-    reduced_vertices, reduced_edges = self._remove_isolated_vertices(vertices, edges)
-    
-    # Phase 2: Degree-based optimizations (applied if profitable)
-    if len(reduced_vertices) != original_vertex_count:
-        analyzer = GraphStructureAnalyzer(reduced_vertices, reduced_edges)
-        degree_sequence = [len(analyzer.adjacency[v]) for v in reduced_vertices]
-        
-        # Apply Brooks' theorem for upper bound refinement
-        max_degree = max(degree_sequence) if degree_sequence else 0
-        brooks_bound = max_degree + 1
-        
-        # Check for bipartite structure (2-colorable)
-        if self._is_bipartite_check(reduced_vertices, reduced_edges):
-            optimized_colors = min(num_colors, 2)
-        else:
-            optimized_colors = min(num_colors, brooks_bound)
-    else:
-        optimized_colors = num_colors
-    
-    # Phase 3: Advanced reductions (applied selectively)
-    preprocessing_time = time.time() - preprocessing_start
-    time_budget = 0.1 * self.expected_solve_time  # 10% of expected solve time
-    
-    if preprocessing_time < time_budget and len(reduced_vertices) <= 100:
-        final_vertices, final_edges = self._apply_advanced_reductions(
-            reduced_vertices, reduced_edges)
-    else:
-        final_vertices, final_edges = reduced_vertices, reduced_edges
-    
-    return final_vertices, final_edges, optimized_colors
-\end{lstlisting}
-
-\subsection{Efficient Vertex Filtering}
-\label{appendix:vertex-filtering}
-
-\begin{lstlisting}[language=Python, caption=Efficient Vertex Filtering]
-def _remove_isolated_vertices(self, vertices: List[int], 
-                            edges: List[Tuple[int, int]]) -> Tuple[List[int], List[Tuple[int, int]]]:
-    """Remove vertices with no incident edges"""
-    # Build connectivity set for O(E) filtering
-    connected_vertices = set()
-    for u, v in edges:
-        connected_vertices.add(u)
-        connected_vertices.add(v)
-    
-    # Filter vertices maintaining original ordering
-    filtered_vertices = [v for v in vertices if v in connected_vertices]
-    return filtered_vertices, edges
-\end{lstlisting}
-
-\subsection{Priority-Based Variable Selection}
-\label{appendix:priority-selection}
-
-\begin{lstlisting}[language=Python, caption=Priority-Based Variable Selection]
-def _select_variable_graph_aware(self, cnf_formula: List[List[int]], 
-                               assignments: Dict[int, bool]) -> Optional[int]:
-    """Enhanced variable selection using graph priorities"""
-    if not self.variable_priority_order:
-        self.enhanced_stats['fallback_activations'] += 1
-        return self._pick_unassigned_variable(cnf_formula, assignments)
-    
-    # Check priority cache for previously computed selections
-    cache_key = tuple(sorted(assignments.keys()))
-    if cache_key in self.priority_cache:
-        self.enhanced_stats['priority_cache_hits'] += 1
-        cached_variable = self.priority_cache[cache_key]
-        if cached_variable not in assignments:
-            return cached_variable
-    
-    # Find highest priority unassigned variable
-    for variable in self.variable_priority_order:
-        if variable not in assignments:
-            self.priority_cache[cache_key] = variable
-            return variable
-    
-    self.enhanced_stats['fallback_activations'] += 1
-    return self._pick_unassigned_variable(cnf_formula, assignments)
-\end{lstlisting}
-
-\subsection{Dynamic Priority Adjustment}
-\label{appendix:priority-adjustment}
-
-\begin{lstlisting}[language=Python, caption=Dynamic Priority Adjustment]
-def _update_variable_priorities_dynamic(self, conflict_variables: Set[int]) -> None:
-    """Dynamically adjust priorities based on conflict analysis"""
-    if not self.variable_priority_order:
-        return
-    
-    # Boost priority of conflict variables using conservative adjustment
-    for variable in conflict_variables:
-        if variable in self.variable_priority_order:
-            current_index = self.variable_priority_order.index(variable)
-            boost_amount = min(current_index // 4, 10)  # Conservative boosting
-            new_index = max(0, current_index - boost_amount)
-            
-            # Reposition variable maintaining relative ordering
-            self.variable_priority_order.pop(current_index)
-            self.variable_priority_order.insert(new_index, variable)
-\end{lstlisting}
-
-\section{System Architecture \& Module Code}
-
-\subsection{Module Dependency Management}
-\label{appendix:module-dependency}
-
-\begin{lstlisting}[language=Python, caption=Module Dependency Management]
-class EnhancedCDCLSolver(DPLLSolver):
-    def __init__(self, enable_graph_awareness: bool = True, verbose: bool = False):
-        super().__init__(verbose=verbose)
-        
-        # Lazy initialization to minimize startup overhead
-        self.graph_analyzer = None
-        self.preprocessor = None
-        self.heuristics_manager = None
-        
-        # Dependency injection for testing and configuration
-        self.analyzer_factory = GraphStructureAnalyzer
-        self.preprocessor_factory = GraphAwarePreprocessor
-        
-    def _initialize_components(self, vertices: List[int], edges: List[Tuple[int, int]]):
-        """Initialize components with dependency injection support"""
-        if self.enable_graph_awareness:
-            self.graph_analyzer = self.analyzer_factory(vertices, edges)
-            self.preprocessor = self.preprocessor_factory()
-            self.heuristics_manager = GraphAwareHeuristics()
-            
-            # Establish component communication channels
-            self.heuristics_manager.set_analyzer(self.graph_analyzer)
-        
-    def _cleanup_components(self):
-        """Clean up component resources and caches"""
-        if self.graph_analyzer:
-            self.graph_analyzer.clear_caches()
-        if hasattr(self, 'priority_cache'):
-            self.priority_cache.clear()
-\end{lstlisting}
-
-\subsection{Robust Error Handling and Fallback Mechanisms}
-\label{appendix:error-handling}
-
-\begin{lstlisting}[language=Python, caption=Robust Error Handling and Fallback Mechanisms]
-def _execute_with_fallback(self, operation_name: str, primary_func, fallback_func, *args):
-    """Execute operation with automatic fallback on failure"""
-    if not self.enable_graph_awareness:
-        return fallback_func(*args)
-    
-    # Circuit breaker pattern for repeated failures
-    failure_key = f"{operation_name}_failures"
-    if self.enhanced_stats.get(failure_key, 0) >= self.max_failures:
-        self.enhanced_stats['fallback_activations'] += 1
-        return fallback_func(*args)
-    
-    try:
-        return primary_func(*args)
-    except Exception as e:
-        # Log failure and increment counter
-        self.enhanced_stats[failure_key] = self.enhanced_stats.get(failure_key, 0) + 1
-        if self.verbose:
-            print(f"Graph-aware operation {operation_name} failed: {e}")
-        
-        # Fallback to standard implementation
-        self.enhanced_stats['fallback_activations'] += 1
-        return fallback_func(*args)
-\end{lstlisting}
-
-\subsection{Flexible Graph Input Processing}
-\label{appendix:input-processing}
-
-\begin{lstlisting}[language=Python, caption=Flexible Graph Input Processing]
-def solve_graph_coloring(self, vertices: List[int], edges: List[Tuple[int, int]], 
-                        num_colors: int, timeout: float = 300.0) -> Tuple[bool, Dict[int, int], Dict]:
-    """Main entry point with comprehensive input validation"""
-    # Input validation and normalization
-    try:
-        validated_vertices, validated_edges = self._validate_and_normalize_input(
-            vertices, edges, num_colors)
-    except ValueError as e:
-        return False, {}, {'error': f"Input validation failed: {e}"}
-    
-    # Initialize components with validated input
-    self._initialize_components(validated_vertices, validated_edges)
-    
-    # Apply preprocessing optimizations
-    if self.enable_graph_awareness:
-        processed_vertices, processed_edges, optimized_colors = self._execute_with_fallback(
-            "preprocessing", 
-            lambda: self.preprocessor.preprocess_graph_coloring_instance(
-                validated_vertices, validated_edges, num_colors),
-            lambda: (validated_vertices, validated_edges, num_colors)
-        )
-    else:
-        processed_vertices, processed_edges, optimized_colors = (
-            validated_vertices, validated_edges, num_colors)
-    
-    # Generate CNF encoding
-    cnf_formula = self._create_cnf_encoding(processed_vertices, processed_edges, optimized_colors)
-    
-    # Execute solving with timeout management
-    start_time = time.time()
-    sat_result, sat_assignment = self._solve_with_timeout(cnf_formula, timeout, start_time)
-    
-    # Convert SAT solution to graph coloring format
-    if sat_result:
-        graph_coloring = self._decode_sat_solution(sat_assignment, processed_vertices, optimized_colors)
-        validation_result = self._validate_solution(graph_coloring, validated_edges)
-        
-        if not validation_result:
-            return False, {}, {'error': 'Generated invalid solution'}
-        
-        return True, graph_coloring, self.get_comprehensive_statistics()
-    else:
-        return False, {}, self.get_comprehensive_statistics()
-\end{lstlisting}
-
-\subsection{Solution Decoding and Validation}
-\label{appendix:solution-decoding}
-
-\begin{lstlisting}[language=Python, caption=Solution Decoding and Validation]
-def _decode_sat_solution(self, sat_assignment: Dict[int, bool], vertices: List[int], 
-                        num_colors: int) -> Dict[int, int]:
-    """Convert SAT assignment to graph coloring with validation"""
-    graph_coloring = {}
-    
-    for vertex in vertices:
-        assigned_colors = []
-        for color in range(num_colors):
-            sat_variable = vertex * num_colors + color + 1
-            if sat_assignment.get(sat_variable, False):
-                assigned_colors.append(color)
-        
-        # Validate exactly one color per vertex
-        if len(assigned_colors) != 1:
-            raise ValueError(f"Vertex {vertex} has {len(assigned_colors)} colors assigned")
-        
-        graph_coloring[vertex] = assigned_colors[0]
-    
-    return graph_coloring
-
-def _validate_solution(self, coloring: Dict[int, int], edges: List[Tuple[int, int]]) -> bool:
-    """Verify graph coloring constraint satisfaction"""
-    for u, v in edges:
-        if u in coloring and v in coloring:
-            if coloring[u] == coloring[v]:
-                if self.verbose:
-                    print(f"Constraint violation: vertices {u} and {v} have same color {coloring[u]}")
-                return False
-    return True
-\end{lstlisting}
-
-\subsection{Adaptive Configuration Management}
-\label{appendix:config-management}
-
-\begin{lstlisting}[language=Python, caption=Adaptive Configuration Management]
-class ConfigurationManager:
-    def __init__(self):
-        self.default_config = {
-            'centrality_weights': {'degree': 0.7, 'betweenness': 0.3},
-            'preprocessing_threshold': 50,
-            'max_failures': 3,
-            'cache_size_limit': 1000,
-            'time_budget_ratio': 0.1
-        }
-        
-        self.topology_profiles = {
-            'sparse': {'centrality_weights': {'degree': 0.8, 'betweenness': 0.2}},
-            'dense': {'centrality_weights': {'degree': 0.5, 'betweenness': 0.5}},
-            'bipartite': {'preprocessing_threshold': 100},
-            'planar': {'time_budget_ratio': 0.15}
-        }
-    
-    def get_adaptive_config(self, graph_properties: Dict[str, float]) -> Dict[str, Any]:
-        """Generate configuration based on graph characteristics"""
-        config = self.default_config.copy()
-        
-        # Adapt based on graph density
-        density = graph_properties.get('density', 0.5)
-        if density < 0.3:
-            config.update(self.topology_profiles['sparse'])
-        elif density > 0.7:
-            config.update(self.topology_profiles['dense'])
-        
-        # Scale preprocessing threshold based on problem size
-        vertex_count = graph_properties.get('vertex_count', 50)
-        if vertex_count > 80:
-            config['preprocessing_threshold'] = min(config['preprocessing_threshold'], vertex_count // 2)
-        
-        # Adjust cache limits based on memory considerations
-        estimated_cache_size = vertex_count * vertex_count // 10
-        config['cache_size_limit'] = min(config['cache_size_limit'], estimated_cache_size)
-        
-        return config
-\end{lstlisting}
-
-\section{Data Structures and Memory Management Code}
-
-\subsection{Efficient Graph Structure Construction}
-\label{appendix:graph-construction}
-
-\begin{lstlisting}[language=Python, caption=Efficient Graph Structure Construction]
-class GraphStructureAnalyzer:
-    def __init__(self, vertices: List[int], edges: List[Tuple[int, int]]):
-        self.vertices = vertices
-        self.edges = edges
-        
-        # Primary data structures
-        self.adjacency = defaultdict(set)  # Fast neighbour lookup
-        self.degree_map = {}               # O(1) degree access
-        self.vertex_index = {}             # Vertex to index mapping
-        
-        # Memory tracking
-        self._memory_usage = {
-            'adjacency_bytes': 0,
-            'degree_map_bytes': 0,
-            'cache_bytes': 0
-        }
-        
-        self._build_structures()
-    
-    def _build_structures(self):
-        """Single-pass construction of all graph data structures"""
-        # Build vertex index mapping for O(1) lookups
-        for i, vertex in enumerate(self.vertices):
-            self.vertex_index[vertex] = i
-        
-        # Construct adjacency and degree structures simultaneously
-        for u, v in self.edges:
-            if u != v:  # Skip self-loops during construction
-                self.adjacency[u].add(v)
-                self.adjacency[v].add(u)
-        
-        # Compute degrees from adjacency structure
-        for vertex in self.vertices:
-            self.degree_map[vertex] = len(self.adjacency[vertex])
-        
-        self._update_memory_tracking()
-\end{lstlisting}
-
-\subsection{Memory-Optimized Degree Centrality Computation}
-\label{appendix:degree-centrality}
-
-\begin{lstlisting}[language=Python, caption=Memory-Optimized Degree Centrality Computation]
-def compute_degree_centrality(self) -> Dict[int, float]:
-    """Leverage pre-computed degrees for O(V) centrality calculation"""
-    n = len(self.vertices)
-    if n <= 1:
-        return {v: 0.0 for v in self.vertices}
-    
-    normalization_factor = 1.0 / (n - 1)
-    
-    # Direct degree lookup eliminates adjacency traversal
-    return {vertex: self.degree_map[vertex] * normalization_factor 
-            for vertex in self.vertices}
-
-def _update_memory_tracking(self):
-    """Track actual memory consumption for performance analysis"""
-    # Estimate adjacency structure memory usage
-    edge_memory = sum(len(neighbors) * 8 for neighbors in self.adjacency.values())
-    self._memory_usage['adjacency_bytes'] = edge_memory
-    
-    # Degree map memory (vertex_id -> degree)
-    self._memory_usage['degree_map_bytes'] = len(self.degree_map) * 16
-    
-    # Vertex index memory
-    self._memory_usage['index_bytes'] = len(self.vertex_index) * 16
-\end{lstlisting}
-
-\subsection{Variable Mapping and Priority Storage}
-\label{appendix:variable-mapping}
-
-\begin{lstlisting}[language=Python, caption=Variable Mapping and Priority Storage]
-def _initialize_variable_mappings(self, num_colors: int):
-    """Pre-compute variable mappings for efficient SAT operations"""
-    self.num_colors = num_colors
-    
-    # Forward mapping: (vertex, color) -> SAT variable
-    self.vertex_color_to_var = {}
-    # Reverse mapping: SAT variable -> (vertex, color)
-    self.var_to_vertex_color = {}
-    
-    # Priority-ordered variable list
-    self.variable_priority_order = []
-    
-    # Build mappings using standard encoding
-    for vertex in self.vertices:
-        for color in range(num_colors):
-            sat_var = vertex * num_colors + color + 1
-            self.vertex_color_to_var[(vertex, color)] = sat_var
-            self.var_to_vertex_color[sat_var] = (vertex, color)
-    
-    # Sort variables by vertex centrality priorities
-    vertex_priorities = self._compute_vertex_priorities()
-    sorted_vertices = sorted(self.vertices, 
-                           key=lambda v: vertex_priorities[v], reverse=True)
-    
-    for vertex in sorted_vertices:
-        for color in range(num_colors):
-            sat_var = self.vertex_color_to_var[(vertex, color)]
-            self.variable_priority_order.append(sat_var)
-
-def get_variable_for_assignment(self, vertex: int, color: int) -> int:
-    """O(1) variable lookup using pre-computed mapping"""
-    return self.vertex_color_to_var.get((vertex, color), -1)
-
-def decode_variable_assignment(self, sat_var: int) -> Tuple[int, int]:
-    """O(1) reverse mapping for solution decoding"""
-    return self.var_to_vertex_color.get(sat_var, (-1, -1))
-\end{lstlisting}
-
-\subsection{Priority Cache Implementation with Memory Management}
-\label{appendix:priority-cache}
-
-\begin{lstlisting}[language=Python, caption=Priority Cache Implementation with Memory Management]
-class PriorityCache:
-    def __init__(self, max_size: int = 1000):
-        self.cache = {}
-        self.access_order = []  # LRU tracking
-        self.max_size = max_size
-        self.hit_count = 0
-        self.miss_count = 0
-    
-    def get_cached_variable(self, assignments: Dict[int, bool]) -> Optional[int]:
-        """Retrieve cached variable selection with LRU update"""
-        cache_key = self._generate_cache_key(assignments)
-        
-        if cache_key in self.cache:
-            # Update LRU order
-            self.access_order.remove(cache_key)
-            self.access_order.append(cache_key)
-            self.hit_count += 1
-            return self.cache[cache_key]
-        
-        self.miss_count += 1
-        return None
-    
-    def store_variable_selection(self, assignments: Dict[int, bool], 
-                               selected_variable: int) -> None:
-        """Store variable selection with cache size management"""
-        cache_key = self._generate_cache_key(assignments)
-        
-        # Evict least recently used entries if at capacity
-        if len(self.cache) >= self.max_size and cache_key not in self.cache:
-            lru_key = self.access_order.pop(0)
-            del self.cache[lru_key]
-        
-        self.cache[cache_key] = selected_variable
-        
-        # Update access order
-        if cache_key not in self.access_order:
-            self.access_order.append(cache_key)
-    
-    def _generate_cache_key(self, assignments: Dict[int, bool]) -> str:
-        """Generate consistent cache key from assignment state"""
-        # Sort assignments to ensure consistent key generation
-        sorted_items = sorted(assignments.items())
-        return str(hash(tuple(sorted_items)))
-    
-    def get_cache_statistics(self) -> Dict[str, float]:
-        """Return cache performance metrics"""
-        total_requests = self.hit_count + self.miss_count
-        hit_rate = self.hit_count / max(total_requests, 1)
-        
-        return {
-            'hit_rate': hit_rate,
-            'cache_size': len(self.cache),
-            'memory_usage_bytes': self._estimate_cache_memory()
-        }
-    
-    def _estimate_cache_memory(self) -> int:
-        """Estimate cache memory consumption"""
-        # Rough estimation: key storage + value storage + overhead
-        key_memory = sum(len(key) for key in self.cache.keys()) * 2  # Unicode
-        value_memory = len(self.cache) * 8  # Integer values
-        overhead = len(self.cache) * 64  # Dictionary overhead
-        
-        return key_memory + value_memory + overhead
-\end{lstlisting}
-
-\subsection{Memory Profiling and Management System}
-\label{appendix:memory-profiling}
-
-\begin{lstlisting}[language=Python, caption=Memory Profiling and Management System]
-class MemoryProfiler:
-    def __init__(self, enable_profiling: bool = True):
-        self.enable_profiling = enable_profiling
-        self.memory_snapshots = []
-        self.component_usage = defaultdict(int)
-    
-    def track_component_memory(self, component_name: str, 
-                             data_structure: Any) -> None:
-        """Track memory usage of specific solver components"""
-        if not self.enable_profiling:
-            return
-        
-        memory_usage = self._estimate_structure_size(data_structure)
-        self.component_usage[component_name] = memory_usage
-    
-    def take_memory_snapshot(self, operation_name: str) -> None:
-        """Capture memory state at specific solver operations"""
-        if not self.enable_profiling:
-            return
-        
-        import psutil
-        import os
-        
-        process = psutil.Process(os.getpid())
-        memory_info = process.memory_info()
-        
-        snapshot = {
-            'operation': operation_name,
-            'rss_bytes': memory_info.rss,
-            'vms_bytes': memory_info.vms,
-            'component_breakdown': dict(self.component_usage)
-        }
-        
-        self.memory_snapshots.append(snapshot)
-    
-    def generate_memory_report(self) -> Dict[str, Any]:
-        """Generate comprehensive memory usage analysis"""
-        if not self.memory_snapshots:
-            return {'error': 'No memory snapshots available'}
-        
-        peak_memory = max(snapshot['rss_bytes'] for snapshot in self.memory_snapshots)
-        memory_growth = (self.memory_snapshots[-1]['rss_bytes'] - 
-                        self.memory_snapshots[0]['rss_bytes'])
-        
-        return {
-            'peak_memory_mb': peak_memory / (1024 * 1024),
-            'memory_growth_mb': memory_growth / (1024 * 1024),
-            'component_breakdown': dict(self.component_usage),
-            'snapshot_count': len(self.memory_snapshots)
-        }
-\end{lstlisting}
-
-\section{Integration Challenges and Solutions Code}
-
-\subsection{Variable Ordering Integration Challenge Resolution}
-\label{appendix:variable-ordering-integration}
-
-\begin{lstlisting}[language=Python, caption=Variable Ordering Integration Challenge Resolution]
-def _dpll_with_enhanced_ordering(self, cnf_formula: List[List[int]], 
-                               assignments: Dict[int, bool]) -> Tuple[bool, Dict[int, bool]]:
-    """DPLL with graph-aware variable ordering integration"""
-    # Preserve original DPLL structure while enhancing variable selection
-    propagated_formula, new_assignments = self._unit_propagation(cnf_formula, assignments.copy())
-    assignments.update(new_assignments)
-    
-    # Maintain DPLL termination conditions unchanged
-    if self._is_formula_satisfied(propagated_formula):
-        return True, assignments
-    
-    if self._has_empty_clause(propagated_formula):
-        return False, assignments
-    
-    # Critical integration point: replace variable selection while preserving semantics
-    if self.enable_graph_awareness and hasattr(self, 'variable_priority_order'):
-        try:
-            next_variable = self._select_variable_priority_based(propagated_formula, assignments)
-        except (ValueError, IndexError) as e:
-            # Graceful fallback to standard selection on integration errors
-            if self.verbose:
-                print(f"Priority-based selection failed, using standard method: {e}")
-            next_variable = self._pick_unassigned_variable(propagated_formula, assignments)
-    else:
-        next_variable = self._pick_unassigned_variable(propagated_formula, assignments)
-    
-    # Preserve DPLL branching structure exactly
-    if next_variable is None:
-        return False, assignments
-    
-    # Try positive assignment
-    positive_assignments = assignments.copy()
-    positive_assignments[next_variable] = True
-    positive_formula = self._apply_assignment(propagated_formula, next_variable, True)
-    
-    result, solution = self._dpll_with_enhanced_ordering(positive_formula, positive_assignments)
-    if result:
-        return result, solution
-    
-    # Try negative assignment with preserved backtracking semantics
-    negative_assignments = assignments.copy()
-    negative_assignments[next_variable] = False
-    negative_formula = self._apply_assignment(propagated_formula, next_variable, False)
-    
-    return self._dpll_with_enhanced_ordering(negative_formula, negative_assignments)
-\end{lstlisting}
-
-\subsection{Symmetry Breaking Integration with CNF Generation}
-\label{appendix:symmetry-integration}
-
-\begin{lstlisting}[language=Python, caption=Symmetry Breaking Integration with CNF Generation]
-def _integrate_symmetry_breaking_constraints(self, base_cnf: List[List[int]], 
-                                           vertices: List[int], num_colors: int,
-                                           vertex_mapping: Dict[int, int] = None) -> List[List[int]]:
-    """Integrate symmetry breaking with existing CNF while maintaining consistency"""
-    if not self.enable_graph_awareness:
-        return base_cnf
-    
-    try:
-        # Resolve vertex mapping for consistent variable indexing
-        effective_mapping = vertex_mapping or {v: v for v in vertices}
-        mapped_vertices = [effective_mapping[v] for v in vertices]
-        
-        # Generate symmetry breaking clauses with proper variable mapping
-        symmetry_clauses = self._generate_mapped_symmetry_clauses(mapped_vertices, num_colors)
-        
-        # Validate clause consistency before integration
-        validation_errors = self._validate_clause_consistency(base_cnf, symmetry_clauses)
-        if validation_errors:
-            if self.verbose:
-                print(f"Symmetry breaking validation failed: {validation_errors}")
-            return base_cnf  # Return original CNF on validation failure
-        
-        # Integrate validated symmetry breaking clauses
-        integrated_cnf = base_cnf + symmetry_clauses
-        
-        # Verify integrated formula maintains satisfiability potential
-        if self._check_trivial_unsatisfiability(integrated_cnf):
-            if self.verbose:
-                print("Symmetry breaking creates trivially unsatisfiable formula")
-            return base_cnf
-        
-        return integrated_cnf
-        
-    except Exception as e:
-        if self.verbose:
-            print(f"Symmetry breaking integration failed: {e}")
-        return base_cnf  # Fail safely to base encoding
-\end{lstlisting}
-
-\subsection{Preprocessing-Solving Timing Coordination}
-\label{appendix:timing-coordination}
-
-\begin{lstlisting}[language=Python, caption=Preprocessing-Solving Timing Coordination]
-class TimingCoordinator:
-    def __init__(self, total_timeout: float, preprocessing_budget_ratio: float = 0.15):
-        self.total_timeout = total_timeout
-        self.preprocessing_budget = total_timeout * preprocessing_budget_ratio
-        self.solving_budget = total_timeout * (1.0 - preprocessing_budget_ratio)
-        self.preprocessing_start_time = None
-        self.solving_start_time = None
-        self.adaptive_adjustments = []
-    
-    def begin_preprocessing(self) -> float:
-        """Start preprocessing phase and return allocated time budget"""
-        self.preprocessing_start_time = time.time()
-        return self.preprocessing_budget
-    
-    def check_preprocessing_budget(self) -> Tuple[float, bool]:
-        """Check remaining preprocessing budget and budget status"""
-        if self.preprocessing_start_time is None:
-            return 0.0, False
-        
-        elapsed = time.time() - self.preprocessing_start_time
-        remaining = self.preprocessing_budget - elapsed
-        budget_exceeded = remaining <= 0
-        
-        return max(0, remaining), budget_exceeded
-    
-    def complete_preprocessing(self) -> Dict[str, float]:
-        """Complete preprocessing and adjust solving budget accordingly"""
-        if self.preprocessing_start_time is None:
-            return {'preprocessing_time': 0, 'solving_budget': self.solving_budget}
-        
-        preprocessing_time = time.time() - self.preprocessing_start_time
-        
-        # Recover unused preprocessing time for solving
-        unused_preprocessing = max(0, self.preprocessing_budget - preprocessing_time)
-        adjusted_solving_budget = self.solving_budget + unused_preprocessing
-        
-        return {
-            'preprocessing_time': preprocessing_time,
-            'solving_budget': adjusted_solving_budget,
-            'budget_utilization': preprocessing_time / self.preprocessing_budget
-        }
-\end{lstlisting}
-
-\subsection{Interface Compatibility Preservation}
-\label{appendix:interface-compatibility}
-
-\begin{lstlisting}[language=Python, caption=Interface Compatibility Preservation]
-def solve_graph_coloring(self, vertices: List[int], edges: List[Tuple[int, int]], 
-                        num_colors: int, timeout: float = 300.0) -> Tuple[bool, Dict[int, int], Dict]:
-    """Enhanced solve method with full backward compatibility"""
-    
-    # Compatibility validation for existing callers
-    if not isinstance(vertices, list) or not isinstance(edges, list):
-        raise TypeError("Vertices and edges must be lists for compatibility")
-    
-    if not isinstance(num_colors, int) or num_colors < 1:
-        raise ValueError("Number of colors must be positive integer")
-    
-    # Initialize timing coordination
-    timing_coordinator = TimingCoordinator(timeout)
-    
-    try:
-        # Enhanced processing path (when graph awareness enabled)
-        if self.enable_graph_awareness:
-            return self._solve_with_enhancements(vertices, edges, num_colors, timing_coordinator)
-        else:
-            # Compatibility path (preserves exact original behavior)
-            return self._solve_compatibility_mode(vertices, edges, num_colors, timeout)
-            
-    except Exception as e:
-        # Ensure exceptions maintain expected format for existing error handlers
-        if isinstance(e, (ValueError, TypeError)):
-            raise  # Re-raise validation errors as-is
-        
-        # Wrap unexpected errors in standard format
-        return False, {}, {
-            'error': f"Solver error: {str(e)}",
-            'error_type': type(e).__name__,
-            'graph_awareness_active': self.enable_graph_awareness
-        }
-
-def _solve_compatibility_mode(self, vertices: List[int], edges: List[Tuple[int, int]], 
-                            num_colors: int, timeout: float) -> Tuple[bool, Dict[int, int], Dict]:
-    """Exact replication of original solver behavior for compatibility"""
-    
-    # Generate CNF using original encoding method
-    cnf_formula = create_graph_coloring_cnf(vertices, edges, num_colors)
-    
-    # Solve using original DPLL without enhancements
-    start_time = time.time()
-    sat_result, sat_assignment = self._solve_cnf_original(cnf_formula, timeout)
-    solve_time = time.time() - start_time
-    
-    # Return results in exact original format
-    if sat_result:
-        graph_coloring = self._decode_sat_solution_original(sat_assignment, vertices, num_colors)
-        return True, graph_coloring, {
-            'solve_time': solve_time,
-            'decisions': getattr(self, 'decision_count', 0),
-            'conflicts': getattr(self, 'conflict_count', 0)
-        }
-    else:
-        return False, {}, {
-            'solve_time': solve_time,
-            'timeout_exceeded': solve_time >= timeout
-        }
-\end{lstlisting}
-
-\section{Error Handling and Robustness Code}
-
-\subsection{Circuit Breaker Implementation for Graph Operations}
-\label{appendix:circuit-breaker}
-
-\begin{lstlisting}[language=Python, caption=Circuit Breaker Implementation for Graph Operations]
-class CircuitBreaker:
-    def __init__(self, failure_threshold: int = 3, recovery_timeout: float = 30.0):
-        self.failure_threshold = failure_threshold
-        self.recovery_timeout = recovery_timeout
-        self.failure_counts = defaultdict(int)
-        self.last_failure_times = {}
-        self.circuit_states = defaultdict(str)  # 'closed', 'open', 'half-open'
-    
-    def execute_with_protection(self, operation_name: str, primary_func, 
-                               fallback_func, *args, **kwargs):
-        """Execute operation with circuit breaker protection"""
-        current_time = time.time()
-        circuit_state = self.circuit_states[operation_name]
-        
-        # Check if circuit should transition from open to half-open
-        if circuit_state == 'open':
-            last_failure = self.last_failure_times.get(operation_name, 0)
-            if current_time - last_failure > self.recovery_timeout:
-                self.circuit_states[operation_name] = 'half-open'
-                circuit_state = 'half-open'
-        
-        # Execute based on circuit state
-        if circuit_state == 'open':
-            # Circuit open - use fallback immediately
-            return fallback_func(*args, **kwargs)
-        
-        try:
-            # Circuit closed or half-open - try primary function
-            result = primary_func(*args, **kwargs)
-            
-            # Success - reset failure count and close circuit
-            if circuit_state == 'half-open':
-                self.failure_counts[operation_name] = 0
-                self.circuit_states[operation_name] = 'closed'
-            
-            return result
-            
-        except Exception as e:
-            # Failure - update failure tracking
-            self.failure_counts[operation_name] += 1
-            self.last_failure_times[operation_name] = current_time
-            
-            # Open circuit if threshold exceeded
-            if self.failure_counts[operation_name] >= self.failure_threshold:
-                self.circuit_states[operation_name] = 'open'
-            
-            # Log failure and use fallback
-            if hasattr(self, 'verbose') and self.verbose:
-                print(f"Circuit breaker activated for {operation_name}: {str(e)}")
-            
-            return fallback_func(*args, **kwargs)
-\end{lstlisting}
-
-\subsection{Comprehensive Input Validation with Error Recovery}
-\label{appendix:input-validation}
-
-\begin{lstlisting}[language=Python, caption=Comprehensive Input Validation with Error Recovery]
-def _validate_and_sanitize_graph_input(self, vertices: List[int], 
-                                     edges: List[Tuple[int, int]], 
-                                     num_colors: int) -> Tuple[List[int], List[Tuple[int, int]], List[str]]:
-    """Multi-stage input validation with error recovery"""
-    warnings = []
-    
-    # Stage 1: Basic parameter validation
-    if num_colors < 1:
-        raise ValueError("Number of colors must be positive")
-    
-    if not vertices:
-        raise ValueError("Vertex list cannot be empty")
-    
-    if len(vertices) != len(set(vertices)):
-        # Remove duplicates and warn
-        original_count = len(vertices)
-        vertices = list(set(vertices))
-        warnings.append(f"Removed {original_count - len(vertices)} duplicate vertices")
-    
-    # Stage 2: Edge validation and sanitization
-    sanitized_edges = []
-    edge_set = set()  # Track unique edges
-    invalid_edge_count = 0
-    self_loop_count = 0
-    
-    vertex_set = set(vertices)
-    for u, v in edges:
-        # Check for self-loops
-        if u == v:
-            self_loop_count += 1
-            continue  # Skip self-loops
-        
-        # Check for invalid vertices
-        if u not in vertex_set or v not in vertex_set:
-            invalid_edge_count += 1
-            continue
-        
-        # Normalize edge ordering for duplicate detection
-        normalized_edge = tuple(sorted([u, v]))
-        if normalized_edge not in edge_set:
-            edge_set.add(normalized_edge)
-            sanitized_edges.append((u, v))
-    
-    # Report sanitization results
-    if self_loop_count > 0:
-        warnings.append(f"Removed {self_loop_count} self-loop edges")
-    
-    if invalid_edge_count > 0:
-        warnings.append(f"Removed {invalid_edge_count} edges referencing non-existent vertices")
-    
-    duplicate_count = len(edges) - len(sanitized_edges) - self_loop_count - invalid_edge_count
-    if duplicate_count > 0:
-        warnings.append(f"Removed {duplicate_count} duplicate edges")
-    
-    # Stage 3: Vertex index normalization
-    normalized_vertices, normalized_edges = self._normalize_vertex_indices(vertices, sanitized_edges)
-    
-    if normalized_vertices != vertices:
-        warnings.append("Normalized vertex indices to start from 0")
-    
-    return normalized_vertices, normalized_edges, warnings
-\end{lstlisting}
-
-\subsection{Component Isolation and Recovery Framework}
-\label{appendix:component-recovery}
-
-\begin{lstlisting}[language=Python, caption=Component Isolation and Recovery Framework]
-class ComponentRecoveryManager:
-    def __init__(self, verbose: bool = False):
-        self.verbose = verbose
-        self.component_status = {}
-        self.recovery_strategies = {}
-        self.failure_logs = defaultdict(list)
-    
-    def register_component(self, component_name: str, fallback_strategy: Callable):
-        """Register component with associated recovery strategy"""
-        self.component_status[component_name] = 'operational'
-        self.recovery_strategies[component_name] = fallback_strategy
-    
-    def execute_component_operation(self, component_name: str, operation: Callable, *args, **kwargs):
-        """Execute component operation with recovery support"""
-        if self.component_status.get(component_name) == 'disabled':
-            # Component disabled - use fallback immediately
-            return self._execute_fallback(component_name, *args, **kwargs)
-        
-        try:
-            result = operation(*args, **kwargs)
-            
-            # Operation successful - mark component as healthy
-            if self.component_status.get(component_name) == 'degraded':
-                self.component_status[component_name] = 'operational'
-                if self.verbose:
-                    print(f"Component {component_name} recovered to operational status")
-            
-            return result
-            
-        except MemoryError as e:
-            self._handle_memory_error(component_name, e, *args, **kwargs)
-            return self._execute_fallback(component_name, *args, **kwargs)
-            
-        except (ValueError, ArithmeticError) as e:
-            self._handle_algorithmic_error(component_name, e, *args, **kwargs)
-            return self._execute_fallback(component_name, *args, **kwargs)
-            
-        except Exception as e:
-            self._handle_unexpected_error(component_name, e, *args, **kwargs)
-            return self._execute_fallback(component_name, *args, **kwargs)
-    
-    def _handle_memory_error(self, component_name: str, error: MemoryError, *args, **kwargs):
-        """Handle memory-related component failures"""
-        self.component_status[component_name] = 'disabled'
-        self.failure_logs[component_name].append({
-            'timestamp': time.time(),
-            'error_type': 'memory',
-            'message': str(error),
-            'args_size': len(args)
-        })
-        
-        if self.verbose:
-            print(f"Component {component_name} disabled due to memory constraints")
-    
-    def _execute_fallback(self, component_name: str, *args, **kwargs):
-        """Execute registered fallback strategy for component"""
-        fallback_strategy = self.recovery_strategies.get(component_name)
-        if fallback_strategy:
-            return fallback_strategy(*args, **kwargs)
-        else:
-            raise RuntimeError(f"No fallback strategy registered for component {component_name}")
-\end{lstlisting}
-
-\subsection{Diagnostic Logging and Debug Infrastructure}
-\label{appendix:diagnostic-logging}
-
-\begin{lstlisting}[language=Python, caption=Diagnostic Logging and Debug Infrastructure]
-import logging
-from typing import Dict, Any, Optional
-import traceback
-
-class SolverDiagnostics:
-    def __init__(self, log_level: str = 'INFO', enable_detailed_tracing: bool = False):
-        self.logger = self._setup_logger(log_level)
-        self.enable_detailed_tracing = enable_detailed_tracing
-        self.operation_timings = {}
-        self.error_summary = defaultdict(int)
-        self.debug_checkpoints = []
-    
-    def _setup_logger(self, log_level: str) -> logging.Logger:
-        """Configure structured logging for solver operations"""
-        logger = logging.getLogger('enhanced_sat_solver')
-        logger.setLevel(getattr(logging, log_level.upper()))
-        
-        # Console handler with structured format
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
-        )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        
-        return logger
-    
-    def log_operation_start(self, operation_name: str, context: Dict[str, Any] = None):
-        """Log beginning of major solver operations"""
-        self.operation_timings[operation_name] = time.time()
-        
-        context_str = f" with context {context}" if context else ""
-        self.logger.info(f"Starting operation: {operation_name}{context_str}")
-        
-        if self.enable_detailed_tracing:
-            self.debug_checkpoints.append({
-                'timestamp': time.time(),
-                'operation': operation_name,
-                'type': 'start',
-                'context': context or {}
-            })
-    
-    def log_operation_complete(self, operation_name: str, result: Any = None, 
-                             metrics: Dict[str, Any] = None):
-        """Log completion of solver operations with performance metrics"""
-        if operation_name in self.operation_timings:
-            duration = time.time() - self.operation_timings[operation_name]
-            self.logger.info(f"Completed operation: {operation_name} in {duration:.4f}s")
-            
-            if metrics:
-                metrics_str = ", ".join(f"{k}={v}" for k, v in metrics.items())
-                self.logger.info(f"Operation metrics: {metrics_str}")
-        
-        if self.enable_detailed_tracing:
-            self.debug_checkpoints.append({
-                'timestamp': time.time(),
-                'operation': operation_name,
-                'type': 'complete',
-                'result_type': type(result).__name__,
-                'metrics': metrics or {}
-            })
-    
-    def generate_diagnostic_report(self) -> Dict[str, Any]:
-        """Generate comprehensive diagnostic report"""
-        total_operations = len(self.operation_timings)
-        total_errors = sum(self.error_summary.values())
-        
-        report = {
-            'summary': {
-                'total_operations': total_operations,
-                'total_errors': total_errors,
-                'error_rate': total_errors / max(total_operations, 1),
-                'most_common_errors': dict(self.error_summary.most_common(3))
-            },
-            'performance': {
-                'operation_timings': dict(self.operation_timings),
-                'average_operation_time': sum(self.operation_timings.values()) / max(len(self.operation_timings), 1)
-            }
-        }
-        
-        if self.enable_detailed_tracing:
-            report['detailed_trace'] = self.debug_checkpoints
-        
-        return report
-\end{lstlisting}
-
-\section{Performance Optimization Techniques Code}
-
-\subsection{Single-Pass Multi-Property Graph Analysis}
-\label{appendix:single-pass-analysis}
-
-\begin{lstlisting}[language=Python, caption=Single-Pass Multi-Property Graph Analysis]
-def _single_pass_graph_analysis(self, vertices: List[int], edges: List[Tuple[int, int]]) -> Dict[str, Any]:
-    """Compute multiple graph properties in single traversal"""
-    analysis_start = time.time()
-    
-    # Initialize all data structures for concurrent population
-    adjacency = defaultdict(set)
-    degree_map = {}
-    edge_count = 0
-    triangle_count = 0
-    vertex_triangles = defaultdict(int)
-    
-    # Single pass through edges - compute everything simultaneously
-    for u, v in edges:
-        if u != v:  # Skip self-loops
-            # Update adjacency and edge counting
-            adjacency[u].add(v)
-            adjacency[v].add(u)
-            edge_count += 1
-            
-            # Triangle detection during edge insertion
-            common_neighbors = adjacency[u] & adjacency[v]
-            triangle_increment = len(common_neighbors)
-            triangle_count += triangle_increment
-            vertex_triangles[u] += triangle_increment
-            vertex_triangles[v] += triangle_increment
-            
-            # Update triangle counts for common neighbors
-            for neighbor in common_neighbors:
-                vertex_triangles[neighbor] += 1
-    
-    # Compute derived properties from shared data structures
-    for vertex in vertices:
-        degree_map[vertex] = len(adjacency[vertex])
-    
-    # Calculate centrality measures using pre-computed structures
-    n = len(vertices)
-    degree_centrality = {v: degree_map[v] / (n - 1) for v in vertices} if n > 1 else {}
-    
-    # Clustering coefficient using triangle data
-    clustering_coefficient = {}
-    for vertex in vertices:
-        degree = degree_map[vertex]
-        if degree >= 2:
-            possible_triangles = degree * (degree - 1) // 2
-            actual_triangles = vertex_triangles[vertex]
-            clustering_coefficient[vertex] = actual_triangles / possible_triangles
-        else:
-            clustering_coefficient[vertex] = 0.0
-    
-    analysis_time = time.time() - analysis_start
-    
-    return {
-        'adjacency': dict(adjacency),
-        'degree_centrality': degree_centrality,
-        'clustering_coefficient': clustering_coefficient,
-        'graph_metrics': {
-            'edge_count': edge_count,
-            'triangle_count': triangle_count,
-            'analysis_time': analysis_time,
-            'vertices_processed': len(vertices)
-        }
-    }
-\end{lstlisting}
-
-\subsection{Lazy Component Initialization with Performance Tracking}
-\label{appendix:lazy-initialization}
-
-\begin{lstlisting}[language=Python, caption=Lazy Component Initialization with Performance Tracking]
-class LazyComponentManager:
-    def __init__(self, enable_graph_awareness: bool = True):
-        self.enable_graph_awareness = enable_graph_awareness
-        
-        # Lazy-loaded components (None until needed)
-        self._graph_analyzer = None
-        self._preprocessor = None
-        self._priority_cache = None
-        
-        # Initialization tracking for performance analysis
-        self.initialization_times = {}
-        self.component_usage_counts = defaultdict(int)
-    
-    @property
-    def graph_analyzer(self) -> 'GraphStructureAnalyzer':
-        """Lazy initialization of graph analyzer with performance tracking"""
-        if self._graph_analyzer is None and self.enable_graph_awareness:
-            init_start = time.time()
-            self._graph_analyzer = GraphStructureAnalyzer([], [])  # Empty initialization
-            self.initialization_times['graph_analyzer'] = time.time() - init_start
-        
-        if self._graph_analyzer is not None:
-            self.component_usage_counts['graph_analyzer'] += 1
-        
-        return self._graph_analyzer
-    
-    @property 
-    def priority_cache(self) -> 'PriorityCache':
-        """Lazy initialization of priority cache with size optimization"""
-        if self._priority_cache is None and self.enable_graph_awareness:
-            init_start = time.time()
-            
-            # Adaptive cache size based on expected problem scale
-            estimated_cache_size = min(1000, max(100, self.estimated_problem_scale * 10))
-            self._priority_cache = PriorityCache(max_size=estimated_cache_size)
-            
-            self.initialization_times['priority_cache'] = time.time() - init_start
-        
-        if self._priority_cache is not None:
-            self.component_usage_counts['priority_cache'] += 1
-            
-        return self._priority_cache
-    
-    def get_initialization_report(self) -> Dict[str, Any]:
-        """Generate performance report for lazy initialization"""
-        total_init_time = sum(self.initialization_times.values())
-        
-        return {
-            'components_initialized': len(self.initialization_times),
-            'total_initialization_time': total_init_time,
-            'initialization_breakdown': dict(self.initialization_times),
-            'usage_counts': dict(self.component_usage_counts),
-            'memory_saved': self._estimate_memory_savings()
-        }
-\end{lstlisting}
-
-\subsection{Advanced Cache Optimization Strategies}
-\label{appendix:cache-optimization}
-
-\begin{lstlisting}[language=Python, caption=Advanced Cache Optimization Strategies]
-class OptimizedPriorityCache(PriorityCache):
-    def __init__(self, max_size: int = 1000, enable_analytics: bool = True):
-        super().__init__(max_size)
-        self.enable_analytics = enable_analytics
-        
-        # Performance optimization structures
-        self.access_frequencies = defaultdict(int)
-        self.cache_value_scores = {}  # Cost-benefit analysis for entries
-        self.warming_candidates = set()
-        
-        # Performance metrics
-        self.optimization_stats = {
-            'cache_warmings': 0,
-            'intelligent_evictions': 0,
-            'memory_compressions': 0
-        }
-    
-    def warm_cache_with_pattern_analysis(self, recent_assignments: List[Dict[int, bool]]):
-        """Pre-populate cache based on access pattern analysis"""
-        if not self.enable_analytics or len(recent_assignments) < 5:
-            return
-        
-        warming_start = time.time()
-        
-        # Analyze assignment patterns for predictive warming
-        pattern_frequency = defaultdict(int)
-        for assignments in recent_assignments:
-            cache_key = self._generate_cache_key(assignments)
-            pattern_frequency[cache_key] += 1
-        
-        # Warm cache with high-frequency patterns
-        high_frequency_patterns = [key for key, freq in pattern_frequency.items() 
-                                 if freq >= 2 and key not in self.cache]
-        
-        for pattern_key in high_frequency_patterns[:10]:  # Limit warming overhead
-            if len(self.cache) < self.max_size:
-                # Simulate variable selection for warming (lightweight computation)
-                predicted_variable = self._predict_variable_for_pattern(pattern_key)
-                if predicted_variable is not None:
-                    self.cache[pattern_key] = predicted_variable
-                    self.cache_value_scores[pattern_key] = 0.8  # High initial value
-                    self.optimization_stats['cache_warmings'] += 1
-        
-        warming_time = time.time() - warming_start
-        if warming_time > 0.01:  # Log significant warming operations
-            print(f"Cache warming completed in {warming_time:.3f}s, added {len(high_frequency_patterns)} entries")
-    
-    def get_optimization_metrics(self) -> Dict[str, Any]:
-        """Return comprehensive cache optimization performance metrics"""
-        total_requests = self.hit_count + self.miss_count
-        
-        return {
-            'hit_rate': self.hit_count / max(total_requests, 1),
-            'average_access_frequency': sum(self.access_frequencies.values()) / max(len(self.access_frequencies), 1),
-            'optimization_operations': dict(self.optimization_stats),
-            'cache_efficiency': len(self.cache) / self.max_size,
-            'memory_utilization': self._estimate_cache_memory(),
-            'high_value_entries': len([v for v in self.cache_value_scores.values() if v > 0.7])
-        }
-\end{lstlisting}
-
-\subsection{Complexity Optimization Implementations}
-\label{appendix:complexity-optimization}
-
-\begin{lstlisting}[language=Python, caption=Complexity Optimization Implementations]
-def _incremental_priority_update(self, conflict_variables: Set[int], adjustment_factor: float = 0.1):
-    """Incremental priority adjustment avoiding full recomputation"""
-    if not self.variable_priority_order or not conflict_variables:
-        return
-    
-    update_start = time.time()
-    
-    # Batch updates for efficiency
-    updates_applied = 0
-    for variable in conflict_variables:
-        if variable in self.variable_priority_order:
-            current_index = self.variable_priority_order.index(variable)
-            
-            # Conservative incremental adjustment
-            boost_amount = max(1, int(current_index * adjustment_factor))
-            new_index = max(0, current_index - boost_amount)
-            
-            if new_index != current_index:
-                # Efficient list manipulation
-                self.variable_priority_order.pop(current_index)
-                self.variable_priority_order.insert(new_index, variable)
-                updates_applied += 1
-    
-    update_time = time.time() - update_start
-    
-    # Track optimization effectiveness
-    self.performance_metrics['incremental_updates'] += 1
-    self.performance_metrics['update_time'] += update_time
-    self.performance_metrics['variables_updated'] += updates_applied
-
-def _bounded_conflict_analysis(self, conflict_clause: List[int], max_analysis_depth: int = 10) -> List[int]:
-    """Conflict analysis with complexity bounds to prevent exponential blowup"""
-    analysis_start = time.time()
-    
-    if len(conflict_clause) > max_analysis_depth:
-        # Truncate analysis for large conflicts to maintain performance
-        high_priority_literals = self._select_high_priority_literals(conflict_clause, max_analysis_depth)
-        analysis_result = high_priority_literals
-    else:
-        # Full analysis for manageable conflicts
-        analysis_result = self._full_conflict_analysis(conflict_clause)
-    
-    analysis_time = time.time() - analysis_start
-    
-    # Performance tracking
-    self.performance_metrics['conflict_analyses'] += 1
-    self.performance_metrics['analysis_time'] += analysis_time
-    self.performance_metrics['analysis_bounded'] += (len(conflict_clause) > max_analysis_depth)
-    
-    return analysis_result
-
-def get_performance_summary(self) -> Dict[str, Any]:
-    """Generate comprehensive performance optimization summary"""
-    if not hasattr(self, 'performance_metrics'):
-        return {'error': 'Performance tracking not enabled'}
-    
-    metrics = self.performance_metrics
-    
-    # Calculate performance ratios and efficiency measures
-    total_updates = metrics.get('incremental_updates', 0)
-    total_update_time = metrics.get('update_time', 0)
-    avg_update_time = total_update_time / max(total_updates, 1)
-    
-    total_analyses = metrics.get('conflict_analyses', 0)
-    bounded_analyses = metrics.get('analysis_bounded', 0)
-    bounded_ratio = bounded_analyses / max(total_analyses, 1)
-    
-    return {
-        'optimization_summary': {
-            'incremental_updates_performed': total_updates,
-            'average_update_time_ms': avg_update_time * 1000,
-            'conflict_analysis_bounded_ratio': bounded_ratio,
-            'total_optimization_time': total_update_time + metrics.get('analysis_time', 0)
-        },
-        'performance_improvements': {
-            'priority_update_efficiency': 'O(k) vs O(n log n) for k updates',
-            'conflict_analysis_bounds': f'Max depth {max_analysis_depth} prevents exponential cases',
-            'cache_hit_rate': getattr(self, 'priority_cache', {}).get('hit_rate', 0) if hasattr(self, 'priority_cache') else 0
-        }
-    }
-\end{lstlisting}
-\section{Testing Framework and Validation Code}
-
-\subsection{Comprehensive Testing Framework Implementation}
-\label{appendix:testing-framework}
-
-\begin{lstlisting}[language=Python, caption=Core Testing Framework Implementation]
-class SolverTestFramework:
-    """Comprehensive testing framework for SAT solver validation"""
-    
-    def __init__(self, test_timeout: float = 60.0):
-        self.test_timeout = test_timeout
-        self.test_results = []
-        self.validation_errors = []
-        self.performance_metrics = {}
-    
-    def validate_solution_correctness(self, vertices: List[int], 
-                                    edges: List[Tuple[int, int]], 
-                                    coloring: Dict[int, int]) -> bool:
-        """Independent solution validation using external logic"""
-        try:
-            # Verify all vertices have assigned colors
-            for vertex in vertices:
-                if vertex not in coloring:
-                    self.validation_errors.append(f"Missing color for vertex {vertex}")
-                    return False
-            
-            # Verify no adjacent vertices share colors
-            for u, v in edges:
-                if coloring.get(u) == coloring.get(v):
-                    self.validation_errors.append(f"Adjacent vertices {u}, {v} have same color")
-                    return False
-            
-            return True
-            
-        except Exception as e:
-            self.validation_errors.append(f"Validation error: {str(e)}")
-            return False
-    
-    def execute_controlled_test(self, solver, test_case: Dict) -> Dict:
-        """Execute single test with comprehensive measurement"""
-        start_time = time.time()
-        memory_start = self._measure_memory_usage()
-        
-        try:
-            success, coloring, stats = solver.solve_graph_coloring(
-                test_case['vertices'], test_case['edges'], test_case['colors']
-            )
-            
-            execution_time = time.time() - start_time
-            memory_peak = self._measure_memory_usage() - memory_start
-            
-            # Independent validation
-            if success:
-                solution_valid = self.validate_solution_correctness(
-                    test_case['vertices'], test_case['edges'], coloring
-                )
-            else:
-                solution_valid = None
-            
-            return {
-                'test_id': test_case['id'],
-                'success': success,
-                'solution_valid': solution_valid,
-                'execution_time': execution_time,
-                'memory_usage': memory_peak,
-                'solver_stats': stats,
-                'test_metadata': test_case.get('metadata', {})
-            }
-            
-        except Exception as e:
-            return {
-                'test_id': test_case['id'],
-                'success': False,
-                'error': str(e),
-                'execution_time': time.time() - start_time
-            }
-    
-    def _measure_memory_usage(self) -> int:
-        """Measure current memory usage in bytes"""
-        import psutil
-        import os
-        process = psutil.Process(os.getpid())
-        return process.memory_info().rss
-\end{lstlisting}
-
-\subsection{Systematic Benchmark Generation}
-\label{appendix:benchmark-generation}
-
-\begin{lstlisting}[language=Python, caption=Systematic Benchmark Generation]
-class BenchmarkGenerator:
-    """Systematic benchmark generation for comprehensive testing"""
+\section{Specialised Testing Components Code}
+\label{appendix:specialised-testing-components}
+
+\subsection{Stress Testing Framework Implementation}
+\label{appendix:stress-testing}
+
+\begin{lstlisting}[language=Python, caption=Stress Testing Framework for Worst-Case Validation]
+class StressTester:
+    """
+    Generates increasingly challenging graph structures that systematically 
+    push baseline solvers towards timeout failure whilst evaluating enhanced solver resilience.
+    """
     
     def __init__(self, random_seed: int = 42):
         self.random_seed = random_seed
-        self.generated_benchmarks = []
+        self.stress_test_catalogue = []
         random.seed(random_seed)
+        
+    def generate_progressive_stress_tests(self, base_vertices: int = 50) -> List[Dict]:
+        """
+        Generate stress tests with progressive difficulty escalation.
+        """
+        stress_tests = []
+        
+        # Dense random graphs with increasing connectivity
+        for density in [0.3, 0.5, 0.7, 0.8, 0.9]:
+            stress_tests.append(self._create_dense_random_graph(base_vertices, density))
+        
+        # High-connectivity regular structures
+        for degree in range(3, min(base_vertices // 2, 15)):
+            stress_tests.append(self._create_regular_graph(base_vertices, degree))
+        
+        # Pathological instances designed to defeat baseline approaches
+        stress_tests.extend(self._create_pathological_instances(base_vertices))
+        
+        return stress_tests
     
-    def generate_test_suite(self, size_range: Tuple[int, int], 
-                          instances_per_size: int = 5) -> List[Dict]:
-        """Generate systematic benchmark suite across size range"""
-        test_suite = []
+    def _create_dense_random_graph(self, n_vertices: int, density: float) -> Dict:
+        """
+        Create dense random graph designed to stress variable ordering heuristics.
+        """
+        vertices = list(range(n_vertices))
+        edges = []
         
-        for vertex_count in range(size_range[0], size_range[1] + 1, 10):
-            # Regular graph structures
-            test_suite.extend(self._generate_regular_graphs(vertex_count, instances_per_size))
-            
-            # Random graph structures  
-            test_suite.extend(self._generate_random_graphs(vertex_count, instances_per_size))
-            
-            # Challenging structures
-            test_suite.extend(self._generate_difficult_cases(vertex_count))
+        # Generate edges based on density
+        total_possible_edges = n_vertices * (n_vertices - 1) // 2
+        target_edges = int(density * total_possible_edges)
         
-        return test_suite
+        edge_set = set()
+        attempts = 0
+        while len(edge_set) < target_edges and attempts < target_edges * 10:
+            u = random.randint(0, n_vertices - 1)
+            v = random.randint(0, n_vertices - 1)
+            if u != v:
+                edge = tuple(sorted([u, v]))
+                edge_set.add(edge)
+            attempts += 1
+        
+        edges = list(edge_set)
+        
+        # Calculate chromatic number estimate (conservative upper bound)
+        max_degree = max(len([e for e in edges if u in e]) for u in vertices)
+        chromatic_estimate = max_degree + 1
+        
+        return {
+            'id': f'dense_random_{n_vertices}_{density:.1f}',
+            'vertices': vertices,
+            'edges': edges,
+            'colors': chromatic_estimate,
+            'metadata': {
+                'graph_type': 'dense_random',
+                'density': density,
+                'difficulty': 'stress',
+                'expected_baseline_failure': density > 0.6
+            }
+        }
     
-    def _generate_regular_graphs(self, n: int, count: int) -> List[Dict]:
-        """Generate regular graph structures for systematic testing"""
-        benchmarks = []
+    def _create_regular_graph(self, n_vertices: int, degree: int) -> Dict:
+        """
+        Create regular graph with specified degree for connectivity stress testing.
+        """
+        if degree >= n_vertices:
+            degree = n_vertices - 1
         
-        for i in range(count):
-            # Cycle graphs
-            vertices = list(range(n))
-            edges = [(i, (i + 1) % n) for i in range(n)]
+        vertices = list(range(n_vertices))
+        edges = set()
+        
+        # Create regular structure
+        for vertex in vertices:
+            connections = 0
+            offset = 1
+            while connections < degree and offset < n_vertices:
+                neighbour = (vertex + offset) % n_vertices
+                if neighbour != vertex:
+                    edge = tuple(sorted([vertex, neighbour]))
+                    edges.add(edge)
+                    connections += 1
+                offset += 1
+        
+        edges = list(edges)
+        
+        return {
+            'id': f'regular_{n_vertices}_{degree}',
+            'vertices': vertices,
+            'edges': edges,
+            'colors': degree + 1,
+            'metadata': {
+                'graph_type': 'regular',
+                'degree': degree,
+                'difficulty': 'stress' if degree > 8 else 'moderate'
+            }
+        }
+    
+    def _create_pathological_instances(self, n_vertices: int) -> List[Dict]:
+        """
+        Create pathological instances specifically designed to expose 
+        baseline solver limitations.
+        """
+        pathological_cases = []
+        
+        # Complete graph (worst case for graph colouring)
+        if n_vertices <= 20:  # Only for small instances due to exponential growth
+            vertices = list(range(n_vertices))
+            edges = [(i, j) for i in range(n_vertices) for j in range(i + 1, n_vertices)]
             
-            benchmarks.append({
-                'id': f'cycle_{n}_{i}',
+            pathological_cases.append({
+                'id': f'complete_{n_vertices}',
                 'vertices': vertices,
                 'edges': edges,
-                'colors': 3,  # Known upper bound for cycles
-                'metadata': {
-                    'graph_type': 'cycle',
-                    'theoretical_chromatic': 2 if n % 2 == 0 else 3
-                }
-            })
-        
-        return benchmarks
-    
-    def _generate_random_graphs(self, n: int, count: int) -> List[Dict]:
-        """Generate random graphs with controlled properties"""
-        benchmarks = []
-        
-        for i in range(count):
-            # Erdős-Rényi random graphs with varying density
-            density = 0.3 + (i * 0.1)  # Vary density across instances
-            vertices = list(range(n))
-            edges = []
-            
-            for u in range(n):
-                for v in range(u + 1, n):
-                    if random.random() < density:
-                        edges.append((u, v))
-            
-            # Estimate chromatic number using degree-based heuristic
-            max_degree = max(sum(1 for u, v in edges if u == vertex or v == vertex) 
-                           for vertex in vertices)
-            estimated_colors = min(n, max_degree + 1)
-            
-            benchmarks.append({
-                'id': f'random_{n}_{i}',
-                'vertices': vertices,
-                'edges': edges,
-                'colors': estimated_colors,
-                'metadata': {
-                    'graph_type': 'random',
-                    'density': density,
-                    'max_degree': max_degree
-                }
-            })
-        
-        return benchmarks
-    
-    def _generate_difficult_cases(self, n: int) -> List[Dict]:
-        """Generate computationally challenging test cases"""
-        difficult_cases = []
-        
-        # Complete graphs (maximum difficulty)
-        if n <= 20:  # Limit complete graphs to manageable size
-            vertices = list(range(n))
-            edges = [(i, j) for i in range(n) for j in range(i + 1, n)]
-            
-            difficult_cases.append({
-                'id': f'complete_{n}',
-                'vertices': vertices,
-                'edges': edges,
-                'colors': n,  # Chromatic number equals vertex count
+                'colors': n_vertices,
                 'metadata': {
                     'graph_type': 'complete',
-                    'difficulty': 'maximum',
-                    'theoretical_chromatic': n
+                    'difficulty': 'pathological',
+                    'expected_baseline_failure': True
                 }
             })
         
-        # Highly connected regular graphs
-        if n >= 6 and n % 2 == 0:
-            vertices = list(range(n))
-            # Connect each vertex to half of the others (high regularity)
-            degree = n // 2
-            edges = []
-            for i in range(n):
-                for j in range(1, degree + 1):
-                    neighbor = (i + j) % n
-                    if i < neighbor:  # Avoid duplicate edges
-                        edges.append((i, neighbor))
-            
-            difficult_cases.append({
-                'id': f'regular_{n}_{degree}',
-                'vertices': vertices,
-                'edges': edges,
-                'colors': degree + 1,
-                'metadata': {
-                    'graph_type': 'regular',
-                    'degree': degree,
-                    'difficulty': 'high'
-                }
-            })
+        # Highly connected bipartite-like structure
+        partition_size = n_vertices // 2
+        vertices = list(range(n_vertices))
+        edges = []
         
-        return difficult_cases
-\end{lstlisting}
-
-\subsection{Performance Measurement Infrastructure}
-\label{appendix:performance-measurement}
-
-\begin{lstlisting}[language=Python, caption=Performance Measurement Infrastructure]
-class PerformanceBenchmark:
-    """Comprehensive performance measurement for solver evaluation"""
+        # Connect most vertices in first partition to most in second partition
+        for i in range(partition_size):
+            for j in range(partition_size, min(n_vertices, partition_size + 15)):
+                edges.append((i, j))
+        
+        pathological_cases.append({
+            'id': f'dense_bipartite_{n_vertices}',
+            'vertices': vertices,
+            'edges': edges,
+            'colors': max(partition_size, 15),
+            'metadata': {
+                'graph_type': 'dense_bipartite',
+                'difficulty': 'pathological'
+            }
+        })
+        
+        return pathological_cases
     
-    def __init__(self, enable_memory_profiling: bool = True):
-        self.enable_memory_profiling = enable_memory_profiling
-        self.measurement_history = []
-        self.baseline_metrics = {}
-    
-    def measure_solver_performance(self, solver, test_suite: List[Dict], 
-                                 repetitions: int = 3) -> Dict[str, Any]:
-        """Execute comprehensive performance measurement across test suite"""
-        performance_results = {
-            'solver_type': type(solver).__name__,
-            'test_count': len(test_suite),
-            'repetitions': repetitions,
-            'measurements': []
+    def execute_stress_test_suite(self, baseline_solver, enhanced_solver, 
+                                stress_tests: List[Dict], timeout: float = 15.0) -> Dict:
+        """
+        Execute stress test suite with failure mode documentation.
+        """
+        stress_results = {
+            'total_tests': len(stress_tests),
+            'baseline_failures': 0,
+            'enhanced_failures': 0,
+            'robustness_improvements': [],
+            'failure_mode_analysis': []
         }
         
-        for test_case in test_suite:
-            test_measurements = []
+        for test_case in stress_tests:
+            print(f"Executing stress test: {test_case['id']}")
             
-            for rep in range(repetitions):
-                measurement = self._execute_single_measurement(solver, test_case, rep)
-                test_measurements.append(measurement)
+            # Test baseline solver
+            baseline_result = self._execute_with_failure_analysis(
+                baseline_solver, test_case, timeout
+            )
             
-            # Aggregate measurements for statistical analysis
-            aggregated = self._aggregate_measurements(test_measurements)
-            performance_results['measurements'].append(aggregated)
+            # Test enhanced solver
+            enhanced_result = self._execute_with_failure_analysis(
+                enhanced_solver, test_case, timeout
+            )
+            
+            # Analyse results
+            if baseline_result['timed_out'] or not baseline_result['success']:
+                stress_results['baseline_failures'] += 1
+            
+            if enhanced_result['timed_out'] or not enhanced_result['success']:
+                stress_results['enhanced_failures'] += 1
+            
+            # Document robustness improvement
+            if (baseline_result['timed_out'] and not enhanced_result['timed_out']):
+                improvement = {
+                    'test_id': test_case['id'],
+                    'improvement_type': 'timeout_avoidance',
+                    'baseline_failed': True,
+                    'enhanced_succeeded': enhanced_result['success']
+                }
+                stress_results['robustness_improvements'].append(improvement)
+            
+            # Document failure modes
+            failure_analysis = {
+                'test_id': test_case['id'],
+                'baseline_behaviour': baseline_result,
+                'enhanced_behaviour': enhanced_result,
+                'robustness_demonstrated': baseline_result['timed_out'] and not enhanced_result['timed_out']
+            }
+            stress_results['failure_mode_analysis'].append(failure_analysis)
         
-        # Generate summary statistics
-        performance_results['summary'] = self._generate_performance_summary(
-            performance_results['measurements']
+        # Calculate summary statistics
+        stress_results['baseline_success_rate'] = (
+            (stress_results['total_tests'] - stress_results['baseline_failures']) / 
+            stress_results['total_tests']
         )
+        stress_results['enhanced_success_rate'] = (
+            (stress_results['total_tests'] - stress_results['enhanced_failures']) / 
+            stress_results['total_tests']
+        )
+        stress_results['robustness_improvement_count'] = len(stress_results['robustness_improvements'])
         
-        return performance_results
+        return stress_results
     
-    def _execute_single_measurement(self, solver, test_case: Dict, repetition: int) -> Dict:
-        """Execute single performance measurement with detailed metrics"""
-        import gc
-        
-        # Prepare clean measurement environment
-        gc.collect()  # Ensure clean memory state
-        
-        measurement_start = time.time()
-        memory_before = self._get_memory_usage() if self.enable_memory_profiling else 0
+    def _execute_with_failure_analysis(self, solver, test_case: Dict, timeout: float) -> Dict:
+        """
+        Execute solver with detailed failure mode analysis.
+        """
+        start_time = time.time()
         
         try:
-            # Execute solver with timing
-            solve_start = time.time()
             success, coloring, stats = solver.solve_graph_coloring(
-                test_case['vertices'], test_case['edges'], test_case['colors']
+                test_case['vertices'], test_case['edges'], test_case['colors'], timeout
             )
-            solve_time = time.time() - solve_start
             
-            memory_after = self._get_memory_usage() if self.enable_memory_profiling else 0
-            total_time = time.time() - measurement_start
+            execution_time = time.time() - start_time
+            timed_out = execution_time >= timeout * 0.95  # 95% of timeout threshold
             
             return {
-                'test_id': test_case['id'],
-                'repetition': repetition,
                 'success': success,
-                'solve_time': solve_time,
-                'total_time': total_time,
-                'memory_delta': memory_after - memory_before,
-                'peak_memory': memory_after,
+                'execution_time': execution_time,
+                'timed_out': timed_out,
                 'solver_stats': stats,
-                'graph_properties': {
-                    'vertices': len(test_case['vertices']),
-                    'edges': len(test_case['edges']),
-                    'colors': test_case['colors']
-                }
+                'failure_mode': 'timeout' if timed_out else ('unsatisfiable' if not success else None)
             }
             
         except Exception as e:
             return {
-                'test_id': test_case['id'],
-                'repetition': repetition,
                 'success': False,
+                'execution_time': time.time() - start_time,
+                'timed_out': False,
                 'error': str(e),
-                'solve_time': float('inf'),
-                'total_time': time.time() - measurement_start
+                'failure_mode': 'exception'
             }
-    
-    def _aggregate_measurements(self, measurements: List[Dict]) -> Dict:
-        """Aggregate multiple measurements with statistical analysis"""
-        if not measurements:
-            return {'error': 'No measurements to aggregate'}
+\end{lstlisting} = self._check_formula_status(cnf_formula, assignments)
         
-        # Filter successful measurements for timing analysis
-        successful = [m for m in measurements if m.get('success', False)]
-        
-        if successful:
-            solve_times = [m['solve_time'] for m in successful]
-            memory_deltas = [m.get('memory_delta', 0) for m in successful]
+        if status == "SATISFIED":
+            self.enhanced_stats['successful_completion'] = True
+            return True, assignments
+        elif status == "UNSATISFIED":
+            if decision_level == 0:
+                return False, {}
             
-            aggregated = {
-                'test_id': measurements[0]['test_id'],
-                'success_rate': len(successful) / len(measurements),
-                'solve_time_stats': {
-                    'mean': sum(solve_times) / len(solve_times),
-                    'min': min(solve_times),
-                    'max': max(solve_times),
-                    'std': self._calculate_std(solve_times)
-                },
-                'memory_stats': {
-                    'mean_delta': sum(memory_deltas) / len(memory_deltas),
-                    'max_delta': max(memory_deltas)
-                } if self.enable_memory_profiling else {},
-                'graph_properties': successful[0]['graph_properties']
-            }
-        else:
-            aggregated = {
-                'test_id': measurements[0]['test_id'],
-                'success_rate': 0.0,
-                'all_failed': True,
-                'errors': [m.get('error', 'Unknown') for m in measurements]
-            }
+            # Enhanced backtracking with conflict analysis
+            try:
+                assignments, decision_level, decision_stack = self._enhanced_backtrack(
+                    assignments, decision_level, decision_stack, cnf_formula
+                )
+            except Exception as e:
+                self.enhanced_stats['backtrack_errors'] = self.enhanced_stats.get('backtrack_errors', 0) + 1
+                return False, {}
+            continue
         
-        return aggregated
-    
-    def _calculate_std(self, values: List[float]) -> float:
-        """Calculate standard deviation for performance analysis"""
-        if len(values) <= 1:
-            return 0.0
+        # Graph-aware variable selection
+        variable = self._choose_variable_with_graph_awareness(cnf_formula, assignments)
+        if variable is None:
+            return False, {}
         
-        mean = sum(values) / len(values)
-        variance = sum((x - mean) ** 2 for x in values) / (len(values) - 1)
-        return variance ** 0.5
-    
-    def _get_memory_usage(self) -> int:
-        """Get current memory usage in bytes"""
-        import psutil
-        import os
-        process = psutil.Process(os.getpid())
-        return process.memory_info().rss
+        # Enhanced decision making with robustness considerations
+        value = self._make_robust_decision(variable, cnf_formula, assignments)
+        
+        # Record decision and continue
+        assignments[variable] = value
+        decision_level += 1
+        decision_stack.append((variable, value, decision_level))
+        self.enhanced_stats['enhanced_decisions'] += 1
 \end{lstlisting}
 
-\subsection{Statistical Analysis and Comparison Framework}
-\label{appendix:statistical-analysis}
+\subsection{Robustness-Oriented Graph Analysis Pipeline}
+\label{appendix:robustness-oriented-analysis}
 
-\begin{lstlisting}[language=Python, caption=Statistical Analysis and Comparison Framework]
-class StatisticalComparator:
-    """Statistical analysis framework for solver comparison"""
+\begin{lstlisting}[language=Python, caption=Robustness-Oriented Graph Analysis Pipeline]
+class RobustnessOrientedAnalyzer:
+    """
+    Graph analysis pipeline designed to maximize robustness insights
+    while accepting computational overhead for comprehensive analysis.
+    """
     
-    def __init__(self, significance_level: float = 0.05):
-        self.significance_level = significance_level
-        self.comparison_results = []
-    
-    def compare_solver_performance(self, baseline_results: Dict, 
-                                 enhanced_results: Dict) -> Dict[str, Any]:
-        """Comprehensive statistical comparison between solvers"""
-        comparison = {
-            'baseline_solver': baseline_results.get('solver_type', 'Unknown'),
-            'enhanced_solver': enhanced_results.get('solver_type', 'Unknown'),
-            'comparison_date': time.strftime('%Y-%m-%d %H:%M:%S'),
-            'significance_level': self.significance_level
-        }
+    def __init__(self, thoroughness_level: str = 'comprehensive'):
+        self.thoroughness_level = thoroughness_level
+        self.analysis_cache = {}
+        self.computation_budget = self._set_computation_budget()
         
-        # Compare success rates
-        success_rate_comparison = self._compare_success_rates(
-            baseline_results, enhanced_results
-        )
-        comparison['success_rate_analysis'] = success_rate_comparison
+    def perform_comprehensive_analysis(self, vertices: List[int], 
+                                     edges: List[Tuple[int, int]]) -> RobustnessAnalysis:
+        """
+        Comprehensive graph analysis optimized for robustness rather than speed.
+        """
+        analysis_start = time.time()
         
-        # Compare performance metrics for successful cases
-        performance_comparison = self._compare_performance_metrics(
-            baseline_results, enhanced_results
-        )
-        comparison['performance_analysis'] = performance_comparison
+        # Phase 1: Structural characterization (accept overhead for completeness)
+        structural_props = self._compute_comprehensive_structural_properties(vertices, edges)
         
-        # Generate overall assessment
-        comparison['overall_assessment'] = self._generate_overall_assessment(
-            success_rate_comparison, performance_comparison
+        # Phase 2: Centrality analysis (thorough computation for robust priorities)
+        centrality_measures = self._compute_multiple_centrality_measures(vertices, edges)
+        
+        # Phase 3: Connectivity analysis (identify potential failure points)
+        connectivity_analysis = self._analyze_connectivity_robustness(vertices, edges)
+        
+        # Phase 4: Priority synthesis (combine multiple measures for robustness)
+        robust_priorities = self._synthesize_robust_variable_priorities(
+            structural_props, centrality_measures, connectivity_analysis
         )
         
-        return comparison
+        analysis_time = time.time() - analysis_start
+        
+        return RobustnessAnalysis(
+            structural_properties=structural_props,
+            centrality_measures=centrality_measures,
+            connectivity_analysis=connectivity_analysis,
+            variable_priorities=robust_priorities,
+            analysis_overhead=analysis_time,
+            robustness_confidence=self._assess_robustness_confidence(
+                structural_props, connectivity_analysis
+            )
+        )
     
-    def _compare_success_rates(self, baseline: Dict, enhanced: Dict) -> Dict:
-        """Compare success rates between solvers"""
-        baseline_measurements = baseline.get('measurements', [])
-        enhanced_measurements = enhanced.get('measurements', [])
+    def _compute_multiple_centrality_measures(self, vertices: List[int], 
+                                           edges: List[Tuple[int, int]]) -> Dict[str, Dict[int, float]]:
+        """
+        Compute multiple centrality measures for robust variable prioritization.
+        Accepts computational overhead for comprehensive structural understanding.
+        """
+        centrality_results = {}
         
-        if not baseline_measurements or not enhanced_measurements:
-            return {'error': 'Insufficient data for success rate comparison'}
+        # Always compute degree centrality (fast baseline)
+        centrality_results['degree'] = self._compute_degree_centrality(vertices, edges)
         
-        baseline_success_rates = [m.get('success_rate', 0) for m in baseline_measurements]
-        enhanced_success_rates = [m.get('success_rate', 0) for m in enhanced_measurements]
+        # Compute betweenness centrality for moderate-scale problems
+        if len(vertices) <= 100:  # Accept overhead for robustness
+            centrality_results['betweenness'] = self._compute_betweenness_centrality(vertices, edges)
+        else:
+            centrality_results['betweenness'] = {v: 0.0 for v in vertices}
         
-        baseline_avg = sum(baseline_success_rates) / len(baseline_success_rates)
-        enhanced_avg = sum(enhanced_success_rates) / len(enhanced_success_rates)
+        # Compute closeness centrality for additional robustness
+        if len(vertices) <= 80:  # Additional overhead for enhanced robustness
+            centrality_results['closeness'] = self._compute_closeness_centrality(vertices, edges)
+        else:
+            centrality_results['closeness'] = {v: 0.0 for v in vertices}
         
-        return {
-            'baseline_success_rate': baseline_avg,
-            'enhanced_success_rate': enhanced_avg,
-            'improvement': enhanced_avg - baseline_avg,
-            'relative_improvement': (enhanced_avg - baseline_avg) / max(baseline_avg, 0.001)
-        }
+        # Compute eigenvector centrality for comprehensive analysis
+        if len(vertices) <= 60 and self.thoroughness_level == 'comprehensive':
+            centrality_results['eigenvector'] = self._compute_eigenvector_centrality(vertices, edges)
+        else:
+            centrality_results['eigenvector'] = {v: 0.0 for v in vertices}
+        
+        return centrality_results
     
-    def _compare_performance_metrics(self, baseline: Dict, enhanced: Dict) -> Dict:
-        """Compare timing and memory performance metrics"""
-        baseline_times = []
-        enhanced_times = []
+    def _synthesize_robust_variable_priorities(self, structural_props: Dict, 
+                                             centrality_measures: Dict[str, Dict[int, float]], 
+                                             connectivity_analysis: Dict) -> List[int]:
+        """
+        Synthesize variable priorities optimized for robustness rather than speed.
+        """
+        vertex_scores = {}
         
-        # Extract timing data from successful measurements
-        for measurement in baseline.get('measurements', []):
-            if measurement.get('success_rate', 0) > 0:
-                solve_time = measurement.get('solve_time_stats', {}).get('mean', float('inf'))
-                if solve_time != float('inf'):
-                    baseline_times.append(solve_time)
-        
-        for measurement in enhanced.get('measurements', []):
-            if measurement.get('success_rate', 0) > 0:
-                solve_time = measurement.get('solve_time_stats', {}).get('mean', float('inf'))
-                if solve_time != float('inf'):
-                    enhanced_times.append(solve_time)
-        
-        if not baseline_times or not enhanced_times:
-            return {'error': 'Insufficient timing data for performance comparison'}
-        
-        baseline_avg_time = sum(baseline_times) / len(baseline_times)
-        enhanced_avg_time = sum(enhanced_times) / len(enhanced_times)
-        
-        # Calculate overhead factor instead of speedup
-        overhead_factor = enhanced_avg_time / max(baseline_avg_time, 0.001)
-        
-        return {
-            'baseline_avg_time': baseline_avg_time,
-            'enhanced_avg_time': enhanced_avg_time,
-            'overhead_factor': overhead_factor,  # CHANGED from 'speedup_factor'
-            'time_overhead': enhanced_avg_time - baseline_avg_time,  # CHANGED from 'time_improvement'
-            'sample_sizes': {
-                'baseline': len(baseline_times),
-                'enhanced': len(enhanced_times)
-            }
-        }
-        
-    def _generate_overall_assessment(self, success_analysis: Dict, 
-                                   performance_analysis: Dict) -> Dict:
-        """Generate comprehensive assessment of solver comparison focusing on trade-off effectiveness"""
-        assessment = {
-            'recommendation': 'inconclusive',
-            'confidence': 'low',
-            'key_findings': [],
-            'trade_off_summary': {}
-        }
-        
-        # Analyze success rate improvements (robustness benefits)
-        success_improvement = success_analysis.get('improvement', 0)
-        relative_improvement = success_analysis.get('relative_improvement', 0)
-        
-        if success_improvement > 0.1:
-            assessment['key_findings'].append('Significant robustness improvement through enhanced success rate')
-            assessment['confidence'] = 'medium'
-        elif success_improvement > 0.05:
-            assessment['key_findings'].append('Moderate robustness improvement')
-            assessment['confidence'] = 'low-medium'
-        
-        # Analyze trade-off effectiveness (overhead vs robustness)
-        overhead_factor = performance_analysis.get('overhead_factor', 1.0)
-        
-        # Check for calculation errors - if we get a speedup factor, convert it
-        if 'speedup_factor' in performance_analysis:
-            # Convert speedup to overhead factor
-            speedup = performance_analysis['speedup_factor']
-            overhead_factor = 1.0 / max(speedup, 0.001) if speedup > 0 else float('inf')
-        
-        # Trade-off effectiveness analysis
-        if success_improvement > 0.05:  # Meaningful robustness improvement
-            if overhead_factor <= 1.2:
-                assessment['key_findings'].append(f'Excellent trade-off: {overhead_factor:.2f}x overhead with robustness benefits')
-                assessment['confidence'] = 'high'
-                assessment['recommendation'] = 'enhanced_solver_strongly_recommended'
-            elif overhead_factor <= 1.5:
-                assessment['key_findings'].append(f'Good trade-off: {overhead_factor:.2f}x overhead with solid robustness gains')
-                assessment['confidence'] = 'medium-high'
-                assessment['recommendation'] = 'enhanced_solver_recommended'
-            elif overhead_factor <= 2.0:
-                assessment['key_findings'].append(f'Acceptable trade-off: {overhead_factor:.2f}x overhead justified by robustness improvements')
-                assessment['confidence'] = 'medium'
-                assessment['recommendation'] = 'enhanced_solver_situational'
+        for vertex in structural_props['vertices']:
+            # Weighted combination emphasizing robustness indicators
+            degree_score = centrality_measures['degree'].get(vertex, 0.0) * 0.4
+            betweenness_score = centrality_measures['betweenness'].get(vertex, 0.0) * 0.3
+            closeness_score = centrality_measures['closeness'].get(vertex, 0.0) * 0.2
+            eigenvector_score = centrality_measures['eigenvector'].get(vertex, 0.0) * 0.1
+            
+            # Add robustness-specific bonuses
+            if vertex in connectivity_analysis.get('critical_vertices', []):
+                robustness_bonus = 0.2  # Prioritize structurally critical vertices
             else:
-                assessment['key_findings'].append(f'High overhead: {overhead_factor:.2f}x may limit practical deployment')
-                assessment['confidence'] = 'medium'
-                assessment['recommendation'] = 'baseline_solver_preferred_for_speed'
-        
-        elif success_improvement > 0:  # Minimal robustness improvement
-            if overhead_factor <= 1.1:
-                assessment['key_findings'].append('Minimal overhead with slight robustness improvement')
-                assessment['confidence'] = 'medium'
-                assessment['recommendation'] = 'enhanced_solver_shows_promise'
-            else:
-                assessment['key_findings'].append('Limited robustness improvement may not justify overhead')
-                assessment['confidence'] = 'low'
-                assessment['recommendation'] = 'baseline_solver_adequate'
-        
-        else:  # No robustness improvement
-            assessment['key_findings'].append('No demonstrated robustness advantage')
-            assessment['confidence'] = 'high'
-            assessment['recommendation'] = 'baseline_solver_preferred'
-        
-        # Generate trade-off summary
-        assessment['trade_off_summary'] = {
-            'overhead_factor': overhead_factor,
-            'success_rate_improvement': success_improvement,
-            'relative_robustness_gain': relative_improvement,
-            'trade_off_category': self._categorize_trade_off(overhead_factor, success_improvement),
-            'deployment_suitability': self._assess_deployment_suitability(overhead_factor, success_improvement)
-        }
-        
-        # Add specific findings based on error conditions
-        if 'error' in performance_analysis:
-            assessment['key_findings'].append('Insufficient performance data for complete trade-off analysis')
-            assessment['confidence'] = 'low'
-        
-        if success_analysis.get('enhanced_success_rate', 0) == 1.0 and success_analysis.get('baseline_success_rate', 0) < 1.0:
-            assessment['key_findings'].append('Enhanced solver achieved 100% success rate - critical robustness advantage')
-            if assessment['confidence'] != 'high':
-                assessment['confidence'] = 'medium-high'
-        
-        return assessment
-
-    def _categorize_trade_off(self, overhead_factor: float, success_improvement: float) -> str:
-        """
-        Categorize the performance-robustness trade-off based on overhead and robustness gains.
-        
-        Args:
-            overhead_factor: Enhanced time / baseline time (>1.0 means slower)
-            success_improvement: Enhanced success rate - baseline success rate
+                robustness_bonus = 0.0
             
-        Returns:
-            String category describing the trade-off effectiveness
-        """
-        if success_improvement <= 0:
-            return 'no_benefit'
-        elif overhead_factor <= 1.2 and success_improvement > 0.05:
-            return 'excellent_trade_off'
-        elif overhead_factor <= 1.5 and success_improvement > 0.05:
-            return 'good_trade_off'
-        elif overhead_factor <= 2.0 and success_improvement > 0.05:
-            return 'acceptable_trade_off'
-        elif overhead_factor > 2.0:
-            return 'expensive_trade_off'
-        else:
-            return 'marginal_trade_off'
-    
-    def _assess_deployment_suitability(self, overhead_factor: float, success_improvement: float) -> str:
-        """
-        Assess deployment suitability based on trade-off characteristics.
+            vertex_scores[vertex] = (
+                degree_score + betweenness_score + closeness_score + 
+                eigenvector_score + robustness_bonus
+            )
         
-        Args:
-            overhead_factor: Enhanced time / baseline time (>1.0 means slower)
-            success_improvement: Enhanced success rate - baseline success rate
-            
-        Returns:
-            String describing deployment recommendation
-        """
-        if success_improvement > 0.1 and overhead_factor <= 1.5:
-            return 'highly_suitable_for_reliability_critical_applications'
-        elif success_improvement > 0.05 and overhead_factor <= 2.0:
-            return 'suitable_where_robustness_prioritized'
-        elif success_improvement > 0 and overhead_factor <= 1.2:
-            return 'suitable_for_general_use'
-        elif overhead_factor > 2.0:
-            return 'limited_to_reliability_critical_scenarios'
-        else:
-            return 'baseline_solver_preferred'
-
-            # Add these two methods to your StatisticalComparator class in app_1.tex
-
-    def _categorize_trade_off(self, overhead_factor: float, success_improvement: float) -> str:
-        """
-        Categorize the performance-robustness trade-off based on overhead and robustness gains.
-        
-        Args:
-            overhead_factor: Enhanced time / baseline time (>1.0 means slower)
-            success_improvement: Enhanced success rate - baseline success rate
-            
-        Returns:
-            String category describing the trade-off effectiveness
-        """
-        if success_improvement <= 0:
-            return 'no_benefit'
-        elif overhead_factor <= 1.2 and success_improvement > 0.05:
-            return 'excellent_trade_off'
-        elif overhead_factor <= 1.5 and success_improvement > 0.05:
-            return 'good_trade_off'
-        elif overhead_factor <= 2.0 and success_improvement > 0.05:
-            return 'acceptable_trade_off'
-        elif overhead_factor > 2.0:
-            return 'expensive_trade_off'
-        else:
-            return 'marginal_trade_off'
-    
-    def _assess_deployment_suitability(self, overhead_factor: float, success_improvement: float) -> str:
-        """
-        Assess deployment suitability based on trade-off characteristics.
-        
-        Args:
-            overhead_factor: Enhanced time / baseline time (>1.0 means slower)
-            success_improvement: Enhanced success rate - baseline success rate
-            
-        Returns:
-            String describing deployment recommendation
-        """
-        if success_improvement > 0.1 and overhead_factor <= 1.5:
-            return 'highly_suitable_for_reliability_critical_applications'
-        elif success_improvement > 0.05 and overhead_factor <= 2.0:
-            return 'suitable_where_robustness_prioritized'
-        elif success_improvement > 0 and overhead_factor <= 1.2:
-            return 'suitable_for_general_use'
-        elif overhead_factor > 2.0:
-            return 'limited_to_reliability_critical_scenarios'
-        else:
-            return 'baseline_solver_preferred'
+        # Return vertices sorted by robustness-oriented priority
+        return sorted(structural_props['vertices'], 
+                     key=lambda v: vertex_scores[v], reverse=True)
 \end{lstlisting}
 
-\subsection{Test Case Validation and Verification}
-\label{appendix:test-validation}
+\subsection{Trade-off Monitoring and Analysis Framework}
+\label{appendix:tradeoff-monitoring}
 
-\begin{lstlisting}[language=Python, caption=Test Case Validation and Verification]
-class TestCaseValidator:
-    """Validation framework for test case integrity and correctness"""
+\begin{lstlisting}[language=Python, caption=Trade-off Monitoring and Analysis Framework]
+class TradeoffAnalyzer:
+    """
+    Comprehensive framework for monitoring and analyzing performance-robustness trade-offs
+    in graph-aware SAT solving applications.
+    """
     
     def __init__(self):
-        self.validation_errors = []
-        self.validation_warnings = []
-    
-    def validate_test_suite(self, test_suite: List[Dict]) -> Dict[str, Any]:
-        """Comprehensive validation of entire test suite"""
-        validation_report = {
-            'total_tests': len(test_suite),
-            'valid_tests': 0,
-            'invalid_tests': 0,
-            'warnings': 0,
-            'validation_details': []
-        }
+        self.baseline_metrics = {}
+        self.enhanced_metrics = {}
+        self.tradeoff_history = []
         
-        for test_case in test_suite:
-            test_validation = self._validate_single_test_case(test_case)
-            validation_report['validation_details'].append(test_validation)
-            
-            if test_validation['valid']:
-                validation_report['valid_tests'] += 1
-            else:
-                validation_report['invalid_tests'] += 1
-            
-            validation_report['warnings'] += len(test_validation.get('warnings', []))
+    def analyze_comprehensive_tradeoff(self, baseline_result: SolverResult, 
+                                     enhanced_result: SolverResult, 
+                                     problem_characteristics: Dict) -> TradeoffAnalysis:
+        """
+        Comprehensive analysis of performance-robustness trade-offs with statistical validation.
+        """
+        # Performance impact analysis
+        performance_analysis = self._analyze_performance_impact(baseline_result, enhanced_result)
         
-        validation_report['success_rate'] = (
-            validation_report['valid_tests'] / max(validation_report['total_tests'], 1)
+        # Robustness improvement analysis
+        robustness_analysis = self._analyze_robustness_improvements(baseline_result, enhanced_result)
+        
+        # Cost-benefit calculation
+        cost_benefit = self._calculate_cost_benefit_ratio(performance_analysis, robustness_analysis)
+        
+        # Statistical significance testing
+        statistical_validation = self._validate_tradeoff_significance(
+            baseline_result, enhanced_result, problem_characteristics
         )
         
-        return validation_report
-    
-    def _validate_single_test_case(self, test_case: Dict) -> Dict:
-        """Validate individual test case for structural correctness"""
-        validation_result = {
-            'test_id': test_case.get('id', 'unknown'),
-            'valid': True,
-            'errors': [],
-            'warnings': []
-        }
+        # Deployment recommendation
+        deployment_guidance = self._generate_deployment_recommendation(
+            cost_benefit, statistical_validation, problem_characteristics
+        )
         
-        # Validate required fields
-        required_fields = ['vertices', 'edges', 'colors']
-        for field in required_fields:
-            if field not in test_case:
-                validation_result['errors'].append(f"Missing required field: {field}")
-                validation_result['valid'] = False
-        
-        if not validation_result['valid']:
-            return validation_result
-        
-        # Validate graph structure
-        vertices = test_case['vertices']
-        edges = test_case['edges']
-        colors = test_case['colors']
-        
-        # Check vertex list validity
-        if not isinstance(vertices, list) or len(vertices) == 0:
-            validation_result['errors'].append("Vertices must be non-empty list")
-            validation_result['valid'] = False
-        
-        # Check for duplicate vertices
-        if len(vertices) != len(set(vertices)):
-            validation_result['warnings'].append("Duplicate vertices detected")
-        
-        # Validate edges
-        vertex_set = set(vertices)
-        for i, edge in enumerate(edges):
-            if not isinstance(edge, (tuple, list)) or len(edge) != 2:
-                validation_result['errors'].append(f"Edge {i} is not a valid pair")
-                validation_result['valid'] = False
-                continue
-            
-            u, v = edge
-            if u not in vertex_set or v not in vertex_set:
-                validation_result['errors'].append(f"Edge ({u}, {v}) references invalid vertex")
-                validation_result['valid'] = False
-            
-            if u == v:
-                validation_result['warnings'].append(f"Self-loop edge detected: ({u}, {v})")
-        
-        # Validate color count
-        if not isinstance(colors, int) or colors < 1:
-            validation_result['errors'].append("Colors must be positive integer")
-            validation_result['valid'] = False
-        
-        # Theoretical validation - chromatic number bounds
-        if validation_result['valid']:
-            theoretical_validation = self._validate_theoretical_bounds(vertices, edges, colors)
-            validation_result['warnings'].extend(theoretical_validation.get('warnings', []))
-        
-        return validation_result
-    
-    def _validate_theoretical_bounds(self, vertices: List[int], 
-                                   edges: List[Tuple[int, int]], 
-                                   colors: int) -> Dict:
-        """Validate against theoretical graph coloring bounds"""
-        warnings = []
-        
-        # Calculate maximum degree
-        degree_map = {v: 0 for v in vertices}
-        for u, v in edges:
-            if u != v:  # Skip self-loops
-                degree_map[u] += 1
-                degree_map[v] += 1
-        
-        max_degree = max(degree_map.values()) if degree_map else 0
-        
-        # Brooks' theorem: chromatic number ≤ max_degree + 1 (with exceptions)
-        brooks_bound = max_degree + 1
-        if colors > brooks_bound:
-            warnings.append(f"Color count {colors} exceeds Brooks' bound {brooks_bound}")
-        
-        # Check for trivially optimal cases
-        if len(vertices) > 0 and colors >= len(vertices):
-            warnings.append(f"Color count {colors} allows trivial vertex-color assignment")
-        
-        # Clique lower bound
-        max_clique_size = self._estimate_max_clique_size(vertices, edges)
-        if colors < max_clique_size:
-            warnings.append(f"Color count {colors} is below clique lower bound {max_clique_size}")
-        
-        return {'warnings': warnings}
-    
-    def _estimate_max_clique_size(self, vertices: List[int], 
-                                edges: List[Tuple[int, int]]) -> int:
-        """Estimate maximum clique size for lower bound validation"""
-        # Build adjacency for clique detection
-        adjacency = {v: set() for v in vertices}
-        for u, v in edges:
-            if u != v:
-                adjacency[u].add(v)
-                adjacency[v].add(u)
-        
-        # Greedy clique finding (approximate)
-        max_clique_found = 1
-        
-        for start_vertex in vertices:
-            current_clique = {start_vertex}
-            candidates = adjacency[start_vertex].copy()
-            
-            while candidates:
-                # Find vertex connected to all current clique members
-                next_vertex = None
-                for candidate in candidates:
-                    if all(candidate in adjacency[clique_member] 
-                          for clique_member in current_clique):
-                        next_vertex = candidate
-                        break
-                
-                if next_vertex:
-                    current_clique.add(next_vertex)
-                    candidates = candidates & adjacency[next_vertex]
-                else:
-                    break
-            
-            max_clique_found = max(max_clique_found, len(current_clique))
-        
-        return max_clique_found
-\end{lstlisting}
-
-\subsection{Regression Testing Framework}
-\label{appendix:regression-testing}
-
-\begin{lstlisting}[language=Python, caption=Regression Testing Framework]
-class RegressionTestManager:
-    """Framework for maintaining regression test suite and detecting performance degradation"""
-    
-    def __init__(self, baseline_results_file: str = "baseline_results.json"):
-        self.baseline_results_file = baseline_results_file
-        self.baseline_data = {}
-        self.regression_threshold = 0.15  # 15% performance degradation threshold
-        self.load_baseline_data()
-    
-    def load_baseline_data(self):
-        """Load previously established baseline performance data"""
-        try:
-            import json
-            with open(self.baseline_results_file, 'r') as f:
-                self.baseline_data = json.load(f)
-        except FileNotFoundError:
-            print(f"Baseline file {self.baseline_results_file} not found, starting fresh")
-            self.baseline_data = {}
-        except json.JSONDecodeError:
-            print(f"Error reading baseline file, starting fresh")
-            self.baseline_data = {}
-    
-    def save_baseline_data(self):
-        """Save current results as new baseline"""
-        import json
-        try:
-            with open(self.baseline_results_file, 'w') as f:
-                json.dump(self.baseline_data, f, indent=2)
-        except Exception as e:
-            print(f"Error saving baseline data: {e}")
-    
-    def execute_regression_test(self, solver, test_suite: List[Dict]) -> Dict[str, Any]:
-        """Execute regression testing against established baselines"""
-        current_results = {}
-        regression_report = {
-            'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-            'solver_type': type(solver).__name__,
-            'regressions_detected': [],
-            'improvements_detected': [],
-            'new_test_cases': []
-        }
-        
-        for test_case in test_suite:
-            test_id = test_case['id']
-            
-            # Execute current test
-            current_result = self._execute_regression_test_case(solver, test_case)
-            current_results[test_id] = current_result
-            
-            # Compare with baseline if available
-            if test_id in self.baseline_data:
-                comparison = self._compare_with_baseline(test_id, current_result)
-                
-                if comparison['regression']:
-                    regression_report['regressions_detected'].append(comparison)
-                elif comparison['improvement']:
-                    regression_report['improvements_detected'].append(comparison)
-            else:
-                regression_report['new_test_cases'].append(test_id)
-        
-        # Update baseline with current results
-        self.baseline_data.update(current_results)
-        
-        regression_report['summary'] = {
-            'total_tests': len(test_suite),
-            'regressions': len(regression_report['regressions_detected']),
-            'improvements': len(regression_report['improvements_detected']),
-            'new_cases': len(regression_report['new_test_cases']),
-            'regression_rate': len(regression_report['regressions_detected']) / max(len(test_suite), 1)
-        }
-        
-        return regression_report
-    
-    def _execute_regression_test_case(self, solver, test_case: Dict) -> Dict:
-        """Execute single test case for regression analysis"""
-        start_time = time.time()
-        
-        try:
-            success, coloring, stats = solver.solve_graph_coloring(
-                test_case['vertices'], test_case['edges'], test_case['colors'], timeout=30.0
-            )
-            
-            execution_time = time.time() - start_time
-            
-            return {
-                'success': success,
-                'execution_time': execution_time,
-                'solver_stats': stats,
-                'timestamp': time.time()
+        return TradeoffAnalysis(
+            overhead_factor=performance_analysis['overhead_factor'],
+            robustness_improvement=robustness_analysis['success_rate_improvement'],
+            cost_benefit_ratio=cost_benefit,
+            statistical_confidence=statistical_validation['confidence_level'],
+            deployment_recommendation=deployment_guidance,
+            detailed_metrics={
+                'performance': performance_analysis,
+                'robustness': robustness_analysis,
+                'validation': statistical_validation
             }
-            
-        except Exception as e:
-            return {
-                'success': False,
-                'error': str(e),
-                'execution_time': time.time() - start_time,
-                'timestamp': time.time()
-            }
+        )
     
-    def _compare_with_baseline(self, test_id: str, current_result: Dict) -> Dict:
-        """Compare current result with baseline for regression detection"""
-        baseline = self.baseline_data[test_id]
-        comparison = {
-            'test_id': test_id,
-            'regression': False,
-            'improvement': False,
-            'performance_change': 0.0
-        }
+    def _analyze_performance_impact(self, baseline: SolverResult, 
+                                  enhanced: SolverResult) -> Dict[str, float]:
+        """
+        Detailed analysis of performance overhead components and their contributions.
+        """
+        if baseline.execution_time == 0:
+            overhead_factor = float('inf') if enhanced.execution_time > 0 else 1.0
+        else:
+            overhead_factor = enhanced.execution_time / baseline.execution_time
         
-        # Compare success status
-        baseline_success = baseline.get('success', False)
-        current_success = current_result.get('success', False)
-        
-        if baseline_success and not current_success:
-            comparison['regression'] = True
-            comparison['issue'] = 'success_rate_degradation'
-            return comparison
-        
-        if not baseline_success and current_success:
-            comparison['improvement'] = True
-            comparison['issue'] = 'success_rate_improvement'
-            return comparison
-        
-        # Compare execution times for successful cases
-        if baseline_success and current_success:
-            baseline_time = baseline.get('execution_time', float('inf'))
-            current_time = current_result.get('execution_time', float('inf'))
-            
-            if baseline_time > 0:
-                performance_change = (current_time - baseline_time) / baseline_time
-                comparison['performance_change'] = performance_change
-                
-                if performance_change > self.regression_threshold:
-                    comparison['regression'] = True
-                    comparison['issue'] = f'performance_degradation_{performance_change:.1%}'
-                elif performance_change < -0.1:  # 10% improvement threshold
-                    comparison['improvement'] = True
-                    comparison['issue'] = f'performance_improvement_{abs(performance_change):.1%}'
-        
-        return comparison
-\end{lstlisting}
-
-\subsection{Memory Profiling and Resource Monitoring}
-\label{appendix:memory-profiling-testing}
-
-\begin{lstlisting}[language=Python, caption=Memory Profiling and Resource Monitoring for Testing]
-class TestingMemoryProfiler:
-    """Memory profiling specifically designed for testing framework needs"""
-    
-    def __init__(self, enable_detailed_tracking: bool = True):
-        self.enable_detailed_tracking = enable_detailed_tracking
-        self.memory_snapshots = []
-        self.resource_limits = {
-            'max_memory_mb': 4096,  # 4GB limit
-            'max_execution_time': 300  # 5 minute limit
-        }
-    
-    def profile_test_execution(self, solver, test_case: Dict) -> Dict[str, Any]:
-        """Execute test with comprehensive memory and resource profiling"""
-        if not self.enable_detailed_tracking:
-            return self._execute_basic_profiling(solver, test_case)
-        
-        profiling_data = {
-            'test_id': test_case['id'],
-            'memory_snapshots': [],
-            'resource_usage': {},
-            'violations': []
-        }
-        
-        # Initial memory snapshot
-        initial_memory = self._capture_memory_snapshot('test_start')
-        profiling_data['memory_snapshots'].append(initial_memory)
-        
-        # Execute with monitoring
-        start_time = time.time()
-        peak_memory = initial_memory['rss_mb']
-        
-        try:
-            # Pre-execution snapshot
-            pre_solve_memory = self._capture_memory_snapshot('pre_solve')
-            profiling_data['memory_snapshots'].append(pre_solve_memory)
-            
-            # Execute solver with resource monitoring
-            success, coloring, stats = solver.solve_graph_coloring(
-                test_case['vertices'], test_case['edges'], test_case['colors']
-            )
-            
-            execution_time = time.time() - start_time
-            
-            # Post-execution snapshot
-            post_solve_memory = self._capture_memory_snapshot('post_solve')
-            profiling_data['memory_snapshots'].append(post_solve_memory)
-            peak_memory = max(peak_memory, post_solve_memory['rss_mb'])
-            
-            # Check resource violations
-            if peak_memory > self.resource_limits['max_memory_mb']:
-                profiling_data['violations'].append(
-                    f"Memory limit exceeded: {peak_memory:.1f}MB > {self.resource_limits['max_memory_mb']}MB"
-                )
-            
-            if execution_time > self.resource_limits['max_execution_time']:
-                profiling_data['violations'].append(
-                    f"Time limit exceeded: {execution_time:.1f}s > {self.resource_limits['max_execution_time']}s"
-                )
-            
-            profiling_data['resource_usage'] = {
-                'execution_time': execution_time,
-                'peak_memory_mb': peak_memory,
-                'memory_growth_mb': peak_memory - initial_memory['rss_mb'],
-                'success': success
-            }
-            
-        except Exception as e:
-            profiling_data['resource_usage'] = {
-                'execution_time': time.time() - start_time,
-                'peak_memory_mb': peak_memory,
-                'error': str(e),
-                'success': False
-            }
-        
-        return profiling_data
-    
-    def _capture_memory_snapshot(self, operation: str) -> Dict[str, Any]:
-        """Capture detailed memory snapshot at specific operation"""
-        import psutil
-        import os
-        import gc
-        
-        # Force garbage collection for accurate measurement
-        gc.collect()
-        
-        process = psutil.Process(os.getpid())
-        memory_info = process.memory_info()
+        preprocessing_overhead = enhanced.preprocessing_time / max(baseline.execution_time, 0.001)
+        analysis_overhead = enhanced.analysis_time / max(baseline.execution_time, 0.001)
+        search_overhead = (enhanced.search_time - baseline.search_time) / max(baseline.execution_time, 0.001)
         
         return {
-            'operation': operation,
-            'timestamp': time.time(),
-            'rss_mb': memory_info.rss / (1024 * 1024),
-            'vms_mb': memory_info.vms / (1024 * 1024),
-            'cpu_percent': process.cpu_percent(),
-            'num_threads': process.num_threads()
+            'overhead_factor': overhead_factor,
+            'preprocessing_overhead_ratio': preprocessing_overhead,
+            'analysis_overhead_ratio': analysis_overhead,
+            'search_overhead_ratio': search_overhead,
+            'total_overhead_seconds': enhanced.execution_time - baseline.execution_time
         }
     
-    def generate_memory_analysis_report(self, profiling_results: List[Dict]) -> Dict[str, Any]:
-        """Generate comprehensive memory analysis across multiple test executions"""
-        if not profiling_results:
-            return {'error': 'No profiling data available'}
+    def _analyze_robustness_improvements(self, baseline: SolverResult, 
+                                       enhanced: SolverResult) -> Dict[str, float]:
+        """
+        Quantitative analysis of robustness improvements and reliability enhancements.
+        """
+        baseline_success = 1.0 if baseline.satisfiable is not None else 0.0
+        enhanced_success = 1.0 if enhanced.satisfiable is not None else 0.0
         
-        memory_analysis = {
-            'total_tests_profiled': len(profiling_results),
-            'memory_statistics': {},
-            'resource_violations': [],
-            'performance_insights': []
+        success_rate_improvement = enhanced_success - baseline_success
+        
+        # Timeout avoidance analysis
+        baseline_timeout = 1.0 if baseline.timed_out else 0.0
+        enhanced_timeout = 1.0 if enhanced.timed_out else 0.0
+        timeout_avoidance = baseline_timeout - enhanced_timeout
+        
+        # Decision efficiency analysis
+        decision_efficiency = self._calculate_decision_efficiency(baseline, enhanced)
+        
+        return {
+            'success_rate_improvement': success_rate_improvement,
+            'timeout_avoidance': timeout_avoidance,
+            'decision_efficiency': decision_efficiency,
+            'reliability_score': (success_rate_improvement + timeout_avoidance) / 2.0
         }
+    
+    def _generate_deployment_recommendation(self, cost_benefit: float, 
+                                          statistical_validation: Dict, 
+                                          problem_characteristics: Dict) -> str:
+        """
+        Generate evidence-based deployment recommendations based on trade-off analysis.
+        """
+        confidence = statistical_validation['confidence_level']
+        problem_difficulty = problem_characteristics.get('difficulty_rating', 'moderate')
         
-        # Aggregate memory statistics
-        peak_memories = []
-        memory_growths = []
-        execution_times = []
+        if cost_benefit > 0.5 and confidence > 0.8:
+            if problem_difficulty == 'high':
+                return 'strongly_recommend_enhanced'
+            else:
+                return 'recommend_enhanced'
+        elif cost_benefit > 0.2 and confidence > 0.6:
+            return 'conditionally_recommend_enhanced'
+        elif cost_benefit > 0.0:
+            return 'evaluate_case_by_case'
+        else:
+            return 'recommend_baseline'
+\end{lstlisting}
+
+\section{Core Graph Analysis Implementation Code}
+\label{appendix:core-graph-analysis}
+
+\subsection{GraphStructureAnalyzer Implementation}
+\label{appendix:graph-structure-analyzer}
+
+\begin{lstlisting}[language=Python, caption=Complete Graph Structure Analyzer Implementation]
+class GraphStructureAnalyzer:
+    """
+    Comprehensive graph analysis for SAT solver optimisation.
+    Provides all graph-theoretic analysis needed for implementing
+    graph-aware heuristics without external dependencies.
+    """
+    
+    def __init__(self, vertices: List[int], edges: List[Tuple[int, int]]):
+        self.vertices = set(vertices)
+        self.edges = set(edges)
+        self.adjacency = defaultdict(set)
+        self.degree_map = {}
+        self._build_adjacency_structure()
+    
+    def _build_adjacency_structure(self):
+        """Build efficient adjacency representation for graph operations"""
+        for u, v in self.edges:
+            self.adjacency[u].add(v)
+            self.adjacency[v].add(u)
         
-        for result in profiling_results:
-            resource_usage = result.get('resource_usage', {})
+        # Compute degree map for O(1) degree access
+        for vertex in self.vertices:
+            self.degree_map[vertex] = len(self.adjacency[vertex])
+    
+    def compute_degree_centrality(self) -> Dict[int, float]:
+        """
+        Compute normalised degree centrality for all vertices.
+        Critical for graph-aware variable ordering in SAT solving.
+        """
+        n = len(self.vertices)
+        if n <= 1:
+            return {v: 0.0 for v in self.vertices}
+        
+        centrality = {}
+        for vertex in self.vertices:
+            degree = self.degree_map[vertex]
+            centrality[vertex] = degree / (n - 1)
+        
+        return centrality
+    
+    def compute_betweenness_centrality(self) -> Dict[int, float]:
+        """
+        Compute betweenness centrality using efficient shortest path algorithms.
+        Identifies structurally important vertices for prioritised variable ordering.
+        """
+        centrality = {vertex: 0.0 for vertex in self.vertices}
+        
+        for source in self.vertices:
+            # Single-source shortest paths using BFS
+            stack = []
+            paths = {vertex: [] for vertex in self.vertices}
+            sigma = {vertex: 0.0 for vertex in self.vertices}
+            distance = {vertex: -1 for vertex in self.vertices}
+            delta = {vertex: 0.0 for vertex in self.vertices}
             
-            if 'peak_memory_mb' in resource_usage:
-                peak_memories.append(resource_usage['peak_memory_mb'])
+            sigma[source] = 1.0
+            distance[source] = 0
+            queue = deque([source])
             
-            if 'memory_growth_mb' in resource_usage:
-                memory_growths.append(resource_usage['memory_growth_mb'])
+            # BFS to find shortest paths
+            while queue:
+                vertex = queue.popleft()
+                stack.append(vertex)
+                
+                for neighbour in self.adjacency[vertex]:
+                    # First time we encounter this vertex
+                    if distance[neighbour] < 0:
+                        queue.append(neighbour)
+                        distance[neighbour] = distance[vertex] + 1
+                    
+                    # Shortest path to neighbour via vertex
+                    if distance[neighbour] == distance[vertex] + 1:
+                        sigma[neighbour] += sigma[vertex]
+                        paths[neighbour].append(vertex)
             
-            if 'execution_time' in resource_usage:
-                execution_times.append(resource_usage['execution_time'])
+            # Accumulation phase
+            while stack:
+                vertex = stack.pop()
+                for predecessor in paths[vertex]:
+                    delta[predecessor] += (sigma[predecessor] / sigma[vertex]) * (1 + delta[vertex])
+                
+                if vertex != source:
+                    centrality[vertex] += delta[vertex]
+        
+        # Normalisation for undirected graphs
+        n = len(self.vertices)
+        if n > 2:
+            normalisation_factor = 2.0 / ((n - 1) * (n - 2))
+            for vertex in centrality:
+                centrality[vertex] *= normalisation_factor
+        
+        return centrality
+    
+    def compute_closeness_centrality(self) -> Dict[int, float]:
+        """
+        Compute closeness centrality for additional robustness metrics.
+        """
+        centrality = {}
+        
+        for vertex in self.vertices:
+            # BFS for shortest path distances
+            distances = {v: float('inf') for v in self.vertices}
+            distances[vertex] = 0
+            queue = deque([vertex])
             
-            # Collect violations
-            violations = result.get('violations', [])
-            if violations:
-                memory_analysis['resource_violations'].extend([
-                    {'test_id': result['test_id'], 'violation': v} for v in violations
-                ])
-        
-        # Calculate statistics
-        if peak_memories:
-            memory_analysis['memory_statistics'] = {
-                'peak_memory_mean': sum(peak_memories) / len(peak_memories),
-                'peak_memory_max': max(peak_memories),
-                'peak_memory_min': min(peak_memories),
-                'memory_growth_mean': sum(memory_growths) / len(memory_growths) if memory_growths else 0,
-                'memory_growth_max': max(memory_growths) if memory_growths else 0
-            }
-        
-        # Generate performance insights
-        if execution_times and peak_memories:
-            # Correlation between problem size and memory usage
-            test_sizes = []
-            for result in profiling_results:
-                # Extract problem size if available in test metadata
-                snapshots = result.get('memory_snapshots', [])
-                if snapshots:
-                    test_sizes.append(len(snapshots))  # Proxy for complexity
+            while queue:
+                current = queue.popleft()
+                for neighbour in self.adjacency[current]:
+                    if distances[neighbour] == float('inf'):
+                        distances[neighbour] = distances[current] + 1
+                        queue.append(neighbour)
             
-            if len(test_sizes) == len(peak_memories):
-                memory_analysis['performance_insights'].append(
-                    f"Memory usage scales with problem complexity"
-                )
+            # Calculate closeness centrality
+            total_distance = sum(d for d in distances.values() if d != float('inf'))
+            reachable_nodes = sum(1 for d in distances.values() if d != float('inf')) - 1
+            
+            if reachable_nodes > 0 and total_distance > 0:
+                centrality[vertex] = reachable_nodes / total_distance
+            else:
+                centrality[vertex] = 0.0
         
-        memory_analysis['violation_rate'] = (
-            len(memory_analysis['resource_violations']) / max(len(profiling_results), 1)
-        )
+        return centrality
+    
+    def analyze_structural_properties(self) -> Dict[str, float]:
+        """
+        Comprehensive structural analysis for adaptive parameter tuning.
+        """
+        n_vertices = len(self.vertices)
+        n_edges = len(self.edges)
         
-        return memory_analysis
+        # Basic graph metrics
+        density = (2 * n_edges) / (n_vertices * (n_vertices - 1)) if n_vertices > 1 else 0
+        average_degree = (2 * n_edges) / n_vertices if n_vertices > 0 else 0
+        
+        # Degree distribution analysis
+        degrees = list(self.degree_map.values())
+        max_degree = max(degrees) if degrees else 0
+        min_degree = min(degrees) if degrees else 0
+        degree_variance = sum((d - average_degree) ** 2 for d in degrees) / len(degrees) if degrees else 0
+        
+        return {
+            'vertex_count': n_vertices,
+            'edge_count': n_edges,
+            'density': density,
+            'average_degree': average_degree,
+            'max_degree': max_degree,
+            'min_degree': min_degree,
+            'degree_variance': degree_variance,
+            'connectivity_complexity': density * degree_variance
+        }
 \end{lstlisting}
