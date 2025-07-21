@@ -1434,3 +1434,1136 @@ class GraphStructureAnalyzer:
             'connectivity_complexity': density * degree_variance
         }
 \end{lstlisting}
+
+% Add these to contents/app_1.tex
+
+\subsection{Overhead Measurement Framework Implementation}
+\label{appendix:overhead-measurement}
+
+\begin{lstlisting}[language=Python, caption=Overhead Quantification and Consistency Analysis Framework]
+class OverheadAnalyzer:
+    """
+    High-precision measurement protocols for isolating graph-analysis costs,
+    priority-computation overhead, and search enhancement expenses.
+    """
+    
+    def __init__(self, enable_detailed_profiling: bool = True):
+        self.enable_detailed_profiling = enable_detailed_profiling
+        self.component_timers = {}
+        self.overhead_measurements = []
+        self.consistency_data = []
+    
+    def measure_component_overhead(self, component_name: str, 
+                                 baseline_time: float, 
+                                 enhanced_time: float,
+                                 problem_characteristics: Dict) -> Dict:
+        """
+        Isolate and quantify specific component overhead with statistical validation.
+        """
+        overhead_factor = enhanced_time / max(baseline_time, 0.001)
+        absolute_overhead = enhanced_time - baseline_time
+        
+        overhead_measurement = {
+            'component': component_name,
+            'baseline_time': baseline_time,
+            'enhanced_time': enhanced_time,
+            'overhead_factor': overhead_factor,
+            'absolute_overhead': absolute_overhead,
+            'problem_size': problem_characteristics.get('vertex_count', 0),
+            'problem_density': problem_characteristics.get('edge_density', 0.0),
+            'timestamp': time.time()
+        }
+        
+        self.overhead_measurements.append(overhead_measurement)
+        return overhead_measurement
+    
+    def validate_overhead_consistency(self, measurements: List[Dict]) -> Dict:
+        """
+        Statistical validation of overhead consistency across problem categories.
+        """
+        if not measurements:
+            return {'consistency_score': 0.0, 'statistical_significance': False}
+        
+        overhead_factors = [m['overhead_factor'] for m in measurements]
+        mean_overhead = statistics.mean(overhead_factors)
+        std_overhead = statistics.stdev(overhead_factors) if len(overhead_factors) > 1 else 0.0
+        
+        # Consistency validation: coefficient of variation should be low
+        coefficient_of_variation = std_overhead / mean_overhead if mean_overhead > 0 else float('inf')
+        consistency_score = max(0.0, 1.0 - coefficient_of_variation)
+        
+        # Statistical significance based on sample size and variance
+        statistical_significance = len(measurements) >= 10 and coefficient_of_variation < 0.3
+        
+        return {
+            'mean_overhead_factor': mean_overhead,
+            'overhead_std_deviation': std_overhead,
+            'coefficient_of_variation': coefficient_of_variation,
+            'consistency_score': consistency_score,
+            'statistical_significance': statistical_significance,
+            'measurement_count': len(measurements),
+            'overhead_bounds': (mean_overhead - 2*std_overhead, mean_overhead + 2*std_overhead)
+        }
+    
+    def generate_overhead_stability_report(self) -> str:
+        """Generate comprehensive overhead stability analysis report."""
+        if not self.overhead_measurements:
+            return "No overhead measurements available for analysis."
+        
+        report = ["=== Overhead Stability Analysis Report ===", ""]
+        
+        # Group measurements by component
+        component_groups = {}
+        for measurement in self.overhead_measurements:
+            component = measurement['component']
+            if component not in component_groups:
+                component_groups[component] = []
+            component_groups[component].append(measurement)
+        
+        # Analyse each component
+        for component, measurements in component_groups.items():
+            consistency_analysis = self.validate_overhead_consistency(measurements)
+            
+            report.append(f"Component: {component}")
+            report.append(f"  Mean Overhead Factor: {consistency_analysis['mean_overhead_factor']:.3f}")
+            report.append(f"  Consistency Score: {consistency_analysis['consistency_score']:.3f}")
+            report.append(f"  Statistical Significance: {consistency_analysis['statistical_significance']}")
+            report.append(f"  Measurement Count: {consistency_analysis['measurement_count']}")
+            report.append("")
+        
+        return "\n".join(report)
+\end{lstlisting}
+
+\subsection{Stress Test Generation Framework}
+\label{appendix:stress-generation}
+
+\begin{lstlisting}[language=Python, caption=Adversarial Test Generation for Robustness Boundary Analysis]
+class StressTester:
+    """
+    Generates increasingly challenging graph structures that systematically 
+    push baseline solvers towards timeout failure whilst evaluating enhanced solver resilience.
+    """
+    
+    def __init__(self, random_seed: int = 42):
+        self.random_seed = random_seed
+        self.stress_test_catalogue = []
+        random.seed(random_seed)
+    
+    def generate_adversarial_instances(self, base_vertices: int = 50) -> List[Dict]:
+        """
+        Generate systematically challenging instances designed to defeat baseline approaches.
+        """
+        adversarial_tests = []
+        
+        # High-degree hub structures that stress variable ordering
+        adversarial_tests.extend(self._create_hub_dominated_graphs(base_vertices))
+        
+        # Dense random graphs with pathological characteristics
+        adversarial_tests.extend(self._create_pathological_dense_graphs(base_vertices))
+        
+        # Regular graphs with high chromatic number requirements
+        adversarial_tests.extend(self._create_high_chromatic_regular_graphs(base_vertices))
+        
+        # Worst-case instances for specific heuristics
+        adversarial_tests.extend(self._create_heuristic_defeating_instances(base_vertices))
+        
+        return adversarial_tests
+    
+    def _create_hub_dominated_graphs(self, n_vertices: int) -> List[Dict]:
+        """Create graphs with high-degree hub vertices that stress variable ordering."""
+        hub_graphs = []
+        
+        for hub_count in [2, 3, 5]:
+            vertices = list(range(n_vertices))
+            edges = []
+            
+            # Create hub vertices with high connectivity
+            hub_vertices = vertices[:hub_count]
+            regular_vertices = vertices[hub_count:]
+            
+            # Connect hubs to most other vertices
+            for hub in hub_vertices:
+                connection_probability = 0.8
+                for other in vertices:
+                    if other != hub and random.random() < connection_probability:
+                        edges.append(tuple(sorted([hub, other])))
+            
+            # Add moderate connectivity between regular vertices
+            for i, v1 in enumerate(regular_vertices):
+                for v2 in regular_vertices[i+1:]:
+                    if random.random() < 0.3:
+                        edges.append(tuple(sorted([v1, v2])))
+            
+            # Remove duplicates
+            edges = list(set(edges))
+            
+            hub_graphs.append({
+                'id': f'hub_dominated_{n_vertices}_{hub_count}',
+                'vertices': vertices,
+                'edges': edges,
+                'colors': hub_count + 3,  # Conservative estimate
+                'metadata': {
+                    'graph_type': 'hub_dominated',
+                    'hub_count': hub_count,
+                    'difficulty': 'adversarial',
+                    'expected_baseline_failure': True,
+                    'stress_characteristic': 'variable_ordering'
+                }
+            })
+        
+        return hub_graphs
+    
+    def _create_pathological_dense_graphs(self, n_vertices: int) -> List[Dict]:
+        """Create dense graphs with characteristics that defeat common heuristics."""
+        pathological_graphs = []
+        
+        # Near-clique with strategic gaps
+        vertices = list(range(n_vertices))
+        edges = []
+        
+        # Create near-complete graph
+        for i in range(n_vertices):
+            for j in range(i + 1, n_vertices):
+                # Strategic gaps to create deceptive structure
+                if not (i % 7 == 0 and j % 7 == 0 and abs(i - j) < 4):
+                    edges.append((i, j))
+        
+        pathological_graphs.append({
+            'id': f'pathological_dense_{n_vertices}',
+            'vertices': vertices,
+            'edges': edges,
+            'colors': n_vertices - 2,  # Pessimistic estimate
+            'metadata': {
+                'graph_type': 'pathological_dense',
+                'difficulty': 'adversarial',
+                'expected_baseline_failure': True,
+                'stress_characteristic': 'decision_making'
+            }
+        })
+        
+        return pathological_graphs
+    
+    def evaluate_stress_test_effectiveness(self, baseline_solver, enhanced_solver, 
+                                         stress_tests: List[Dict], timeout: float = 15.0) -> Dict:
+        """
+        Evaluate the effectiveness of stress tests in demonstrating robustness improvements.
+        """
+        results = {
+            'total_tests': len(stress_tests),
+            'baseline_failures': 0,
+            'enhanced_failures': 0,
+            'robustness_demonstrations': [],
+            'effectiveness_score': 0.0
+        }
+        
+        for test_case in stress_tests:
+            baseline_result = self._execute_stress_test(baseline_solver, test_case, timeout)
+            enhanced_result = self._execute_stress_test(enhanced_solver, test_case, timeout)
+            
+            baseline_failed = baseline_result['timed_out'] or not baseline_result['success']
+            enhanced_failed = enhanced_result['timed_out'] or not enhanced_result['success']
+            
+            if baseline_failed:
+                results['baseline_failures'] += 1
+            if enhanced_failed:
+                results['enhanced_failures'] += 1
+            
+            # Document robustness demonstration
+            if baseline_failed and not enhanced_failed:
+                results['robustness_demonstrations'].append({
+                    'test_id': test_case['id'],
+                    'baseline_failure_mode': 'timeout' if baseline_result['timed_out'] else 'error',
+                    'enhanced_success': enhanced_result['success'],
+                    'improvement_magnitude': timeout - enhanced_result.get('execution_time', timeout)
+                })
+        
+        # Calculate effectiveness score
+        if results['baseline_failures'] > 0:
+            results['effectiveness_score'] = len(results['robustness_demonstrations']) / results['baseline_failures']
+        
+        return results
+\end{lstlisting}
+
+\subsection{Threshold Analysis Framework}
+\label{appendix:threshold-analysis}
+
+\begin{lstlisting}[language=Python, caption=Cost-Benefit Threshold Analysis for Deployment Guidance]
+class ThresholdAnalyser:
+    """
+    Evaluates break-even points where enhanced solver overhead becomes justified 
+    by reliability improvements across different operational contexts.
+    """
+    
+    def __init__(self, cost_model: Optional[Dict] = None):
+        self.cost_model = cost_model or self._default_cost_model()
+        self.threshold_data = []
+        self.deployment_recommendations = {}
+    
+    def _default_cost_model(self) -> Dict:
+        """Default cost model for threshold analysis."""
+        return {
+            'time_cost_factor': 1.0,  # Linear cost of execution time
+            'failure_penalty': 10.0,  # Cost multiplier for solution failure
+            'timeout_penalty': 5.0,   # Cost multiplier for timeout
+            'reliability_value': 3.0  # Value multiplier for reliable solution
+        }
+    
+    def compute_break_even_threshold(self, performance_overhead: float, 
+                                   reliability_improvement: float,
+                                   problem_characteristics: Dict) -> Dict:
+        """
+        Compute the break-even point for performance-reliability trade-off.
+        """
+        baseline_cost = self._calculate_baseline_cost(problem_characteristics)
+        enhanced_cost = self._calculate_enhanced_cost(
+            baseline_cost, performance_overhead, reliability_improvement
+        )
+        
+        break_even_ratio = enhanced_cost / baseline_cost
+        cost_benefit_score = self._calculate_cost_benefit_score(
+            performance_overhead, reliability_improvement
+        )
+        
+        threshold_analysis = {
+            'performance_overhead': performance_overhead,
+            'reliability_improvement': reliability_improvement,
+            'baseline_cost': baseline_cost,
+            'enhanced_cost': enhanced_cost,
+            'break_even_ratio': break_even_ratio,
+            'cost_benefit_score': cost_benefit_score,
+            'recommendation': self._generate_threshold_recommendation(cost_benefit_score),
+            'problem_characteristics': problem_characteristics
+        }
+        
+        self.threshold_data.append(threshold_analysis)
+        return threshold_analysis
+    
+    def _calculate_baseline_cost(self, problem_characteristics: Dict) -> float:
+        """Calculate baseline operational cost."""
+        base_time_cost = problem_characteristics.get('expected_time', 1.0) * self.cost_model['time_cost_factor']
+        failure_risk = problem_characteristics.get('failure_probability', 0.1)
+        failure_cost = failure_risk * self.cost_model['failure_penalty']
+        
+        return base_time_cost + failure_cost
+    
+    def _calculate_enhanced_cost(self, baseline_cost: float, 
+                               overhead: float, reliability_improvement: float) -> float:
+        """Calculate enhanced solver operational cost."""
+        enhanced_time_cost = baseline_cost * overhead
+        reliability_benefit = reliability_improvement * self.cost_model['reliability_value']
+        
+        return enhanced_time_cost - reliability_benefit
+    
+    def _calculate_cost_benefit_score(self, overhead: float, 
+                                    reliability_improvement: float) -> float:
+        """Calculate normalised cost-benefit score."""
+        if overhead <= 1.0:
+            return reliability_improvement  # Pure benefit if no overhead
+        
+        # Normalised score: benefit per unit overhead
+        overhead_cost = overhead - 1.0
+        if overhead_cost == 0:
+            return float('inf') if reliability_improvement > 0 else 0.0
+        
+        return reliability_improvement / overhead_cost
+    
+    def _generate_threshold_recommendation(self, cost_benefit_score: float) -> str:
+        """Generate deployment recommendation based on cost-benefit analysis."""
+        if cost_benefit_score >= 2.0:
+            return 'strongly_recommend_enhanced'
+        elif cost_benefit_score >= 1.0:
+            return 'recommend_enhanced'
+        elif cost_benefit_score >= 0.5:
+            return 'conditionally_recommend_enhanced'
+        elif cost_benefit_score >= 0.0:
+            return 'evaluate_case_by_case'
+        else:
+            return 'recommend_baseline'
+    
+    def generate_deployment_guidance_report(self) -> str:
+        """Generate comprehensive deployment guidance based on threshold analysis."""
+        if not self.threshold_data:
+            return "No threshold analysis data available."
+        
+        report = ["=== Deployment Guidance Report ===", ""]
+        
+        # Aggregate analysis across all threshold data
+        recommendations = [item['recommendation'] for item in self.threshold_data]
+        recommendation_counts = {rec: recommendations.count(rec) for rec in set(recommendations)}
+        
+        report.append("Recommendation Distribution:")
+        for recommendation, count in sorted(recommendation_counts.items()):
+            percentage = (count / len(self.threshold_data)) * 100
+            report.append(f"  {recommendation}: {count} cases ({percentage:.1f}%)")
+        report.append("")
+        
+        # Cost-benefit analysis summary
+        cost_benefit_scores = [item['cost_benefit_score'] for item in self.threshold_data]
+        mean_score = statistics.mean(cost_benefit_scores)
+        
+        report.append(f"Average Cost-Benefit Score: {mean_score:.3f}")
+        report.append(f"Score Range: {min(cost_benefit_scores):.3f} to {max(cost_benefit_scores):.3f}")
+        report.append("")
+        
+        # Deployment recommendations
+        report.append("Deployment Recommendations:")
+        if mean_score >= 1.0:
+            report.append("  - Enhanced solver deployment recommended for most scenarios")
+            report.append("  - Strong cost-benefit justification demonstrated")
+        elif mean_score >= 0.5:
+            report.append("  - Enhanced solver suitable for reliability-critical applications")
+            report.append("  - Case-by-case evaluation recommended")
+        else:
+            report.append("  - Enhanced solver benefits limited in current test scenarios")
+            report.append("  - Focus on specific high-value use cases")
+        
+        return "\n".join(report)
+\end{lstlisting}
+
+\subsection{Independent Solution Validation Framework}
+\label{appendix:independent-validation}
+
+\begin{lstlisting}[language=Python, caption=External Constraint Satisfaction Verification System]
+class SolutionValidator:
+    """
+    Independent solution verification that operates independently of both 
+    baseline and enhanced solver internal mechanisms.
+    """
+    
+    def __init__(self, enable_detailed_validation: bool = True):
+        self.enable_detailed_validation = enable_detailed_validation
+        self.validation_cache = {}
+        self.validation_statistics = {
+            'total_validations': 0,
+            'successful_validations': 0,
+            'failed_validations': 0,
+            'cache_hits': 0
+        }
+    
+    def validate_graph_coloring_solution(self, graph: Dict, 
+                                       solution: Dict[int, int],
+                                       expected_colors: int) -> Dict:
+        """
+        Comprehensive validation of graph coloring solution correctness.
+        """
+        validation_result = {
+            'is_valid': True,
+            'validation_errors': [],
+            'solution_quality': {},
+            'validation_time': 0.0
+        }
+        
+        start_time = time.time()
+        
+        try:
+            # Basic completeness check
+            if not self._validate_solution_completeness(graph, solution):
+                validation_result['is_valid'] = False
+                validation_result['validation_errors'].append('incomplete_solution')
+            
+            # Constraint satisfaction validation
+            if not self._validate_coloring_constraints(graph, solution):
+                validation_result['is_valid'] = False
+                validation_result['validation_errors'].append('constraint_violation')
+            
+            # Solution quality assessment
+            validation_result['solution_quality'] = self._assess_solution_quality(
+                graph, solution, expected_colors
+            )
+            
+            # Update statistics
+            self.validation_statistics['total_validations'] += 1
+            if validation_result['is_valid']:
+                self.validation_statistics['successful_validations'] += 1
+            else:
+                self.validation_statistics['failed_validations'] += 1
+                
+        except Exception as e:
+            validation_result['is_valid'] = False
+            validation_result['validation_errors'].append(f'validation_exception: {str(e)}')
+        
+        validation_result['validation_time'] = time.time() - start_time
+        return validation_result
+    
+    def _validate_solution_completeness(self, graph: Dict, solution: Dict[int, int]) -> bool:
+        """Verify that all vertices have been assigned colors."""
+        graph_vertices = set(graph['vertices'])
+        solution_vertices = set(solution.keys())
+        return graph_vertices == solution_vertices
+    
+    def _validate_coloring_constraints(self, graph: Dict, solution: Dict[int, int]) -> bool:
+        """Verify that no adjacent vertices share the same color."""
+        for edge in graph['edges']:
+            u, v = edge
+            if solution.get(u) == solution.get(v) and solution.get(u) is not None:
+                return False
+        return True
+    
+    def _assess_solution_quality(self, graph: Dict, solution: Dict[int, int], 
+                               expected_colors: int) -> Dict:
+        """Assess the quality characteristics of the solution."""
+        used_colors = set(solution.values())
+        colors_used = len(used_colors)
+        
+        return {
+            'colors_used': colors_used,
+            'expected_colors': expected_colors,
+            'color_efficiency': expected_colors / colors_used if colors_used > 0 else 0.0,
+            'optimal_solution': colors_used <= expected_colors,
+            'color_distribution': self._analyze_color_distribution(solution)
+        }
+    
+    def _analyze_color_distribution(self, solution: Dict[int, int]) -> Dict:
+        """Analyze the distribution of colors across vertices."""
+        color_counts = {}
+        for vertex, color in solution.items():
+            color_counts[color] = color_counts.get(color, 0) + 1
+        
+        if not color_counts:
+            return {'balance_score': 0.0, 'max_imbalance': 0}
+        
+        max_count = max(color_counts.values())
+        min_count = min(color_counts.values())
+        balance_score = min_count / max_count if max_count > 0 else 1.0
+        
+        return {
+            'balance_score': balance_score,
+            'max_imbalance': max_count - min_count,
+            'color_counts': color_counts
+        }
+\end{lstlisting}
+
+\subsection{Failure Mode Analysis Framework}
+\label{appendix:failure-analysis}
+
+\begin{lstlisting}[language=Python, caption=Systematic Failure Mode Documentation and Recovery Analysis]
+class FailureAnalyser:
+    """
+    Captures decision sequences, conflict patterns, and backtracking behaviour 
+    that distinguish robust performance from brittle failure.
+    """
+    
+    def __init__(self, detailed_logging: bool = True):
+        self.detailed_logging = detailed_logging
+        self.failure_patterns = []
+        self.recovery_demonstrations = []
+        self.behavioural_comparisons = []
+    
+    def document_solver_behaviour(self, solver_result: Dict, 
+                                solver_type: str, test_case: Dict) -> Dict:
+        """
+        Document detailed solver behaviour for failure analysis.
+        """
+        behaviour_profile = {
+            'solver_type': solver_type,
+            'test_case_id': test_case.get('id', 'unknown'),
+            'execution_outcome': self._classify_execution_outcome(solver_result),
+            'decision_characteristics': self._analyze_decision_patterns(solver_result),
+            'failure_indicators': self._identify_failure_indicators(solver_result),
+            'robustness_metrics': self._compute_robustness_metrics(solver_result)
+        }
+        
+        if solver_result.get('timed_out', False):
+            behaviour_profile['timeout_analysis'] = self._analyze_timeout_behaviour(solver_result)
+        
+        return behaviour_profile
+    
+    def compare_solver_behaviours(self, baseline_behaviour: Dict, 
+                                enhanced_behaviour: Dict) -> Dict:
+        """
+        Compare baseline and enhanced solver behaviours to identify robustness improvements.
+        """
+        comparison = {
+            'test_case_id': baseline_behaviour['test_case_id'],
+            'outcome_comparison': self._compare_outcomes(baseline_behaviour, enhanced_behaviour),
+            'decision_efficiency': self._compare_decision_efficiency(baseline_behaviour, enhanced_behaviour),
+            'robustness_improvement': self._quantify_robustness_improvement(baseline_behaviour, enhanced_behaviour),
+            'failure_recovery': self._analyze_failure_recovery(baseline_behaviour, enhanced_behaviour)
+        }
+        
+        self.behavioural_comparisons.append(comparison)
+        return comparison
+    
+    def _classify_execution_outcome(self, solver_result: Dict) -> str:
+        """Classify the execution outcome for systematic analysis."""
+        if solver_result.get('timed_out', False):
+            return 'timeout'
+        elif solver_result.get('satisfiable') is None:
+            return 'unsolved'
+        elif solver_result.get('satisfiable', False):
+            return 'satisfiable'
+        else:
+            return 'unsatisfiable'
+    
+    def _analyze_decision_patterns(self, solver_result: Dict) -> Dict:
+        """Analyze decision-making patterns for behavioural characterisation."""
+        decisions = solver_result.get('decisions_made', 0)
+        conflicts = solver_result.get('conflicts_encountered', 0)
+        backtracks = solver_result.get('backtracks_performed', 0)
+        
+        if decisions == 0:
+            return {'decision_efficiency': 0.0, 'conflict_rate': 0.0, 'backtrack_rate': 0.0}
+        
+        return {
+            'decision_efficiency': 1.0 - (conflicts / decisions) if decisions > 0 else 0.0,
+            'conflict_rate': conflicts / decisions if decisions > 0 else 0.0,
+            'backtrack_rate': backtracks / decisions if decisions > 0 else 0.0,
+            'total_decisions': decisions,
+            'total_conflicts': conflicts,
+            'total_backtracks': backtracks
+        }
+    
+    def _identify_failure_indicators(self, solver_result: Dict) -> List[str]:
+        """Identify indicators of solver failure or poor performance."""
+        indicators = []
+        
+        if solver_result.get('timed_out', False):
+            indicators.append('timeout_failure')
+        
+        decisions = solver_result.get('decisions_made', 0)
+        conflicts = solver_result.get('conflicts_encountered', 0)
+        
+        if decisions > 0 and conflicts / decisions > 0.8:
+            indicators.append('high_conflict_rate')
+        
+        if solver_result.get('execution_time', 0) > 10.0:
+            indicators.append('excessive_runtime')
+        
+        if solver_result.get('memory_usage', 0) > 100 * 1024 * 1024:  # 100MB
+            indicators.append('high_memory_usage')
+        
+        return indicators
+    
+    def _quantify_robustness_improvement(self, baseline: Dict, enhanced: Dict) -> Dict:
+        """
+        Quantify the robustness improvement demonstrated by enhanced solver.
+        """
+        baseline_failed = baseline['execution_outcome'] in ['timeout', 'unsolved']
+        enhanced_failed = enhanced['execution_outcome'] in ['timeout', 'unsolved']
+        
+        if baseline_failed and not enhanced_failed:
+            improvement_type = 'failure_recovery'
+            improvement_magnitude = 1.0
+        elif baseline_failed and enhanced_failed:
+            improvement_type = 'no_improvement'
+            improvement_magnitude = 0.0
+        else:
+            # Both succeeded - compare efficiency
+            baseline_efficiency = baseline['decision_characteristics']['decision_efficiency']
+            enhanced_efficiency = enhanced['decision_characteristics']['decision_efficiency']
+            improvement_type = 'efficiency_improvement'
+            improvement_magnitude = max(0.0, enhanced_efficiency - baseline_efficiency)
+        
+        return {
+            'improvement_type': improvement_type,
+            'improvement_magnitude': improvement_magnitude,
+            'baseline_failed': baseline_failed,
+            'enhanced_failed': enhanced_failed,
+            'robustness_demonstrated': baseline_failed and not enhanced_failed
+        }
+    
+    def generate_failure_analysis_report(self) -> str:
+        """Generate comprehensive failure analysis report."""
+        if not self.behavioural_comparisons:
+            return "No behavioural comparison data available."
+        
+        report = ["=== Failure Mode Analysis Report ===", ""]
+        
+        # Count robustness demonstrations
+        robustness_demonstrations = [
+            comp for comp in self.behavioural_comparisons 
+            if comp['robustness_improvement']['robustness_demonstrated']
+        ]
+        
+        total_comparisons = len(self.behavioural_comparisons)
+        demonstration_count = len(robustness_demonstrations)
+        
+        report.append(f"Total Behavioural Comparisons: {total_comparisons}")
+        report.append(f"Robustness Demonstrations: {demonstration_count}")
+        report.append(f"Robustness Improvement Rate: {demonstration_count/total_comparisons:.2%}")
+        report.append("")
+        
+        # Analyze improvement types
+        improvement_types = [comp['robustness_improvement']['improvement_type'] 
+                           for comp in self.behavioural_comparisons]
+        type_counts = {imp_type: improvement_types.count(imp_type) for imp_type in set(improvement_types)}
+        
+        report.append("Improvement Type Distribution:")
+        for imp_type, count in sorted(type_counts.items()):
+            percentage = (count / total_comparisons) * 100
+            report.append(f"  {imp_type}: {count} cases ({percentage:.1f}%)")
+        
+        return "\n".join(report)
+\end{lstlisting}
+
+\subsection{Comprehensive Trade-off Evaluation Framework}
+\label{appendix:comprehensive-evaluation}
+
+\begin{lstlisting}[language=Python, caption=Multi-dimensional Trade-off Analysis and Characterisation]
+class TradeoffEvaluator:
+    """
+    Generates detailed experimental data suitable for thesis-level validation 
+    of graph-aware optimisation effectiveness.
+    """
+    
+    def __init__(self, enable_statistical_validation: bool = True):
+        self.enable_statistical_validation = enable_statistical_validation
+        self.evaluation_data = []
+        self.statistical_summaries = {}
+        self.trade_off_models = {}
+    
+    def evaluate_comprehensive_trade_offs(self, baseline_results: List[Dict], 
+                                        enhanced_results: List[Dict],
+                                        problem_characteristics: List[Dict]) -> Dict:
+        """
+        Comprehensive evaluation of performance-robustness trade-offs across all test categories.
+        """
+        if len(baseline_results) != len(enhanced_results) or len(baseline_results) != len(problem_characteristics):
+            raise ValueError("Result sets and problem characteristics must have matching lengths")
+        
+        comprehensive_analysis = {
+            'total_evaluations': len(baseline_results),
+            'performance_analysis': self._analyze_performance_characteristics(baseline_results, enhanced_results),
+            'robustness_analysis': self._analyze_robustness_characteristics(baseline_results, enhanced_results),
+            'trade_off_characterization': self._characterize_trade_off_relationships(
+                baseline_results, enhanced_results, problem_characteristics
+            ),
+            'deployment_recommendations': self._generate_deployment_recommendations(
+                baseline_results, enhanced_results, problem_characteristics
+            )
+        }
+        
+        # Statistical validation if enabled
+        if self.enable_statistical_validation:
+            comprehensive_analysis['statistical_validation'] = self._perform_statistical_validation(
+                baseline_results, enhanced_results
+            )
+        
+        self.evaluation_data.append(comprehensive_analysis)
+        return comprehensive_analysis
+    
+    def _analyze_performance_characteristics(self, baseline_results: List[Dict], 
+                                           enhanced_results: List[Dict]) -> Dict:
+        """Analyze performance characteristics across all evaluations."""
+        overhead_factors = []
+        absolute_overheads = []
+        
+        for baseline, enhanced in zip(baseline_results, enhanced_results):
+            if baseline.get('execution_time', 0) > 0:
+                overhead_factor = enhanced.get('execution_time', 0) / baseline['execution_time']
+                overhead_factors.append(overhead_factor)
+                absolute_overheads.append(enhanced.get('execution_time', 0) - baseline['execution_time'])
+        
+        if not overhead_factors:
+            return {'mean_overhead': 0.0, 'overhead_consistency': 0.0}
+        
+        mean_overhead = statistics.mean(overhead_factors)
+        overhead_std = statistics.stdev(overhead_factors) if len(overhead_factors) > 1 else 0.0
+        consistency_score = 1.0 - (overhead_std / mean_overhead) if mean_overhead > 0 else 0.0
+        
+        return {
+            'mean_overhead_factor': mean_overhead,
+            'overhead_standard_deviation': overhead_std,
+            'overhead_consistency_score': consistency_score,
+            'mean_absolute_overhead': statistics.mean(absolute_overheads) if absolute_overheads else 0.0,
+            'overhead_range': (min(overhead_factors), max(overhead_factors)) if overhead_factors else (0.0, 0.0)
+        }
+    
+    def _analyze_robustness_characteristics(self, baseline_results: List[Dict], 
+                                          enhanced_results: List[Dict]) -> Dict:
+        """Analyze robustness improvements across all evaluations."""
+        success_improvements = 0
+        timeout_preventions = 0
+        total_evaluations = len(baseline_results)
+        
+        for baseline, enhanced in zip(baseline_results, enhanced_results):
+            baseline_success = not (baseline.get('timed_out', False) or baseline.get('satisfiable') is None)
+            enhanced_success = not (enhanced.get('timed_out', False) or enhanced.get('satisfiable') is None)
+            
+            if not baseline_success and enhanced_success:
+                success_improvements += 1
+            
+            if baseline.get('timed_out', False) and not enhanced.get('timed_out', False):
+                timeout_preventions += 1
+        
+        return {
+            'success_improvement_rate': success_improvements / total_evaluations,
+            'timeout_prevention_rate': timeout_preventions / total_evaluations,
+            'robustness_score': (success_improvements + timeout_preventions) / total_evaluations,
+            'total_robustness_demonstrations': success_improvements + timeout_preventions
+        }
+    
+    def _characterize_trade_off_relationships(self, baseline_results: List[Dict], 
+                                            enhanced_results: List[Dict],
+                                            problem_characteristics: List[Dict]) -> Dict:
+        """Characterize the relationship between performance cost and robustness benefit."""
+        trade_off_points = []
+        
+        for baseline, enhanced, problem in zip(baseline_results, enhanced_results, problem_characteristics):
+            performance_cost = self._calculate_performance_cost(baseline, enhanced)
+            robustness_benefit = self._calculate_robustness_benefit(baseline, enhanced)
+            
+            trade_off_points.append({
+                'performance_cost': performance_cost,
+                'robustness_benefit': robustness_benefit,
+                'cost_benefit_ratio': robustness_benefit / max(performance_cost, 0.001),
+                'problem_size': problem.get('vertex_count', 0),
+                'problem_complexity': problem.get('edge_density', 0.0)
+            })
+        
+        # Analyze trade-off patterns
+        cost_benefit_ratios = [point['cost_benefit_ratio'] for point in trade_off_points]
+        
+        return {
+            'trade_off_points': trade_off_points,
+            'mean_cost_benefit_ratio': statistics.mean(cost_benefit_ratios) if cost_benefit_ratios else 0.0,
+            'cost_benefit_consistency': 1.0 - (statistics.stdev(cost_benefit_ratios) / statistics.mean(cost_benefit_ratios)) 
+                                       if len(cost_benefit_ratios) > 1 and statistics.mean(cost_benefit_ratios) > 0 else 0.0,
+            'positive_trade_offs': len([ratio for ratio in cost_benefit_ratios if ratio > 1.0]),
+            'total_trade_offs': len(cost_benefit_ratios)
+        }
+    
+    def _calculate_performance_cost(self, baseline: Dict, enhanced: Dict) -> float:
+        """Calculate normalised performance cost."""
+        baseline_time = baseline.get('execution_time', 0)
+        enhanced_time = enhanced.get('execution_time', 0)
+        
+        if baseline_time <= 0:
+            return 0.0
+        
+        return (enhanced_time - baseline_time) / baseline_time
+    
+    def _calculate_robustness_benefit(self, baseline: Dict, enhanced: Dict) -> float:
+        """Calculate normalised robustness benefit."""
+        baseline_success = not (baseline.get('timed_out', False) or baseline.get('satisfiable') is None)
+        enhanced_success = not (enhanced.get('timed_out', False) or enhanced.get('satisfiable') is None)
+        
+        if baseline_success and enhanced_success:
+            # Both succeeded - measure efficiency improvement
+            baseline_decisions = baseline.get('decisions_made', 1)
+            enhanced_decisions = enhanced.get('decisions_made', 1)
+            return max(0.0, (baseline_decisions - enhanced_decisions) / baseline_decisions)
+        elif not baseline_success and enhanced_success:
+            # Failure recovery - maximum benefit
+            return 1.0
+        else:
+            # No improvement or both failed
+            return 0.0
+    
+    def _perform_statistical_validation(self, baseline_results: List[Dict], 
+                                      enhanced_results: List[Dict]) -> Dict:
+        """Perform statistical validation of trade-off effectiveness."""
+        if len(baseline_results) < 10:
+            return {'statistical_significance': False, 'reason': 'insufficient_sample_size'}
+        
+        # Paired t-test for execution time differences
+        baseline_times = [r.get('execution_time', 0) for r in baseline_results if r.get('execution_time', 0) > 0]
+        enhanced_times = [r.get('execution_time', 0) for r in enhanced_results if r.get('execution_time', 0) > 0]
+        
+        if len(baseline_times) != len(enhanced_times) or len(baseline_times) < 10:
+            return {'statistical_significance': False, 'reason': 'insufficient_valid_measurements'}
+        
+        # Simple statistical validation without external dependencies
+        time_differences = [e - b for b, e in zip(baseline_times, enhanced_times)]
+        mean_difference = statistics.mean(time_differences)
+        std_difference = statistics.stdev(time_differences) if len(time_differences) > 1 else 0.0
+        
+        # Simplified significance test
+        t_statistic = mean_difference / (std_difference / (len(time_differences) ** 0.5)) if std_difference > 0 else 0.0
+        
+        return {
+            'statistical_significance': abs(t_statistic) > 2.0,  # Simplified threshold
+            'mean_time_difference': mean_difference,
+            'standard_error': std_difference / (len(time_differences) ** 0.5),
+            't_statistic': t_statistic,
+            'sample_size': len(time_differences)
+        }
+    
+    def generate_comprehensive_evaluation_report(self) -> str:
+        """Generate comprehensive evaluation report for thesis documentation."""
+        if not self.evaluation_data:
+            return "No evaluation data available for comprehensive analysis."
+        
+        # Use the most recent evaluation
+        latest_evaluation = self.evaluation_data[-1]
+        
+        report = ["=== Comprehensive Trade-off Evaluation Report ===", ""]
+        
+        # Performance analysis
+        perf_analysis = latest_evaluation['performance_analysis']
+        report.append("Performance Analysis:")
+        report.append(f"  Mean Overhead Factor: {perf_analysis['mean_overhead_factor']:.3f}")
+        report.append(f"  Overhead Consistency Score: {perf_analysis['overhead_consistency_score']:.3f}")
+        report.append(f"  Mean Absolute Overhead: {perf_analysis['mean_absolute_overhead']:.3f}s")
+        report.append("")
+        
+        # Robustness analysis
+        rob_analysis = latest_evaluation['robustness_analysis']
+        report.append("Robustness Analysis:")
+        report.append(f"  Success Improvement Rate: {rob_analysis['success_improvement_rate']:.2%}")
+        report.append(f"  Timeout Prevention Rate: {rob_analysis['timeout_prevention_rate']:.2%}")
+        report.append(f"  Overall Robustness Score: {rob_analysis['robustness_score']:.3f}")
+        report.append("")
+        
+        # Trade-off characterisation
+        tradeoff_char = latest_evaluation['trade_off_characterization']
+        report.append("Trade-off Characterisation:")
+        report.append(f"  Mean Cost-Benefit Ratio: {tradeoff_char['mean_cost_benefit_ratio']:.3f}")
+        report.append(f"  Positive Trade-offs: {tradeoff_char['positive_trade_offs']}/{tradeoff_char['total_trade_offs']}")
+        report.append(f"  Trade-off Consistency: {tradeoff_char['cost_benefit_consistency']:.3f}")
+        report.append("")
+        
+        # Statistical validation
+        if 'statistical_validation' in latest_evaluation:
+            stat_val = latest_evaluation['statistical_validation']
+            report.append("Statistical Validation:")
+            report.append(f"  Statistical Significance: {stat_val['statistical_significance']}")
+            if stat_val['statistical_significance']:
+                report.append(f"  Mean Time Difference: {stat_val['mean_time_difference']:.3f}s")
+                report.append(f"  T-statistic: {stat_val['t_statistic']:.3f}")
+            report.append("")
+        
+        return "\n".join(report)
+\end{lstlisting}
+
+\subsection{Scalability Testing Framework}
+\label{appendix:scalability-testing}
+
+\begin{lstlisting}[language=Python, caption=Scalability Analysis and Deployment Boundary Assessment]
+class ScalabilityAnalyser:
+    """
+    Implements controlled scaling experiments that characterise how trade-off ratios 
+    evolve with problem size and complexity.
+    """
+    
+    def __init__(self, scaling_factors: List[float] = None):
+        self.scaling_factors = scaling_factors or [0.5, 1.0, 1.5, 2.0, 2.5]
+        self.scalability_data = []
+        self.deployment_boundaries = {}
+    
+    def analyze_scalability_characteristics(self, base_problem: Dict, 
+                                          baseline_solver, enhanced_solver,
+                                          timeout: float = 30.0) -> Dict:
+        """
+        Analyze how trade-off characteristics evolve with increasing problem scale.
+        """
+        scaling_results = {
+            'base_problem_id': base_problem.get('id', 'unknown'),
+            'scaling_analysis': [],
+            'scalability_trends': {},
+            'deployment_boundaries': {}
+        }
+        
+        for scale_factor in self.scaling_factors:
+            scaled_problem = self._scale_problem(base_problem, scale_factor)
+            
+            # Test both solvers on scaled problem
+            baseline_result = self._execute_scalability_test(baseline_solver, scaled_problem, timeout)
+            enhanced_result = self._execute_scalability_test(enhanced_solver, scaled_problem, timeout)
+            
+            # Analyze scaling characteristics
+            scale_analysis = self._analyze_scale_point(
+                scale_factor, baseline_result, enhanced_result, scaled_problem
+            )
+            
+            scaling_results['scaling_analysis'].append(scale_analysis)
+        
+        # Analyze trends across scale points
+        scaling_results['scalability_trends'] = self._analyze_scalability_trends(
+            scaling_results['scaling_analysis']
+        )
+        
+        # Determine deployment boundaries
+        scaling_results['deployment_boundaries'] = self._determine_deployment_boundaries(
+            scaling_results['scaling_analysis']
+        )
+        
+        self.scalability_data.append(scaling_results)
+        return scaling_results
+    
+    def _scale_problem(self, base_problem: Dict, scale_factor: float) -> Dict:
+        """Scale problem size while maintaining structural characteristics."""
+        base_vertices = len(base_problem['vertices'])
+        scaled_vertex_count = max(10, int(base_vertices * scale_factor))
+        
+        # Simple scaling: proportionally adjust vertex count and edge density
+        original_edge_density = len(base_problem['edges']) / (base_vertices * (base_vertices - 1) / 2)
+        
+        scaled_vertices = list(range(scaled_vertex_count))
+        scaled_edges = []
+        
+        # Generate edges based on original density
+        import random
+        random.seed(42)  # Reproducible scaling
+        
+        for i in range(scaled_vertex_count):
+            for j in range(i + 1, scaled_vertex_count):
+                if random.random() < original_edge_density:
+                    scaled_edges.append((i, j))
+        
+        # Estimate chromatic number (conservative)
+        max_degree = max(len([e for e in scaled_edges if v in e]) for v in scaled_vertices) if scaled_edges else 1
+        scaled_colors = min(max_degree + 1, scaled_vertex_count)
+        
+        return {
+            'id': f"{base_problem.get('id', 'scaled')}_{scale_factor:.1f}x",
+            'vertices': scaled_vertices,
+            'edges': scaled_edges,
+            'colors': scaled_colors,
+            'scale_factor': scale_factor,
+            'original_problem': base_problem.get('id', 'unknown')
+        }
+    
+    def _execute_scalability_test(self, solver, problem: Dict, timeout: float) -> Dict:
+        """Execute solver with scalability-focused measurement."""
+        start_time = time.time()
+        
+        try:
+            # This would be replaced with actual solver execution
+            # For framework demonstration, simulate execution characteristics
+            vertex_count = len(problem['vertices'])
+            edge_count = len(problem['edges'])
+            
+            # Simulate execution time based on problem complexity
+            simulated_time = (vertex_count * 0.01) + (edge_count * 0.005)
+            if simulated_time > timeout:
+                return {
+                    'execution_time': timeout,
+                    'timed_out': True,
+                    'satisfiable': None,
+                    'decisions_made': int(vertex_count * 10),
+                    'memory_usage': vertex_count * 1024
+                }
+            else:
+                return {
+                    'execution_time': simulated_time,
+                    'timed_out': False,
+                    'satisfiable': True,
+                    'decisions_made': int(vertex_count * 5),
+                    'memory_usage': vertex_count * 512
+                }
+                
+        except Exception as e:
+            return {
+                'execution_time': time.time() - start_time,
+                'timed_out': False,
+                'satisfiable': None,
+                'error': str(e)
+            }
+    
+    def _analyze_scale_point(self, scale_factor: float, baseline_result: Dict, 
+                           enhanced_result: Dict, problem: Dict) -> Dict:
+        """Analyze trade-off characteristics at specific scale point."""
+        baseline_time = baseline_result.get('execution_time', 0)
+        enhanced_time = enhanced_result.get('execution_time', 0)
+        
+        overhead_factor = enhanced_time / max(baseline_time, 0.001)
+        
+        baseline_success = not baseline_result.get('timed_out', False)
+        enhanced_success = not enhanced_result.get('timed_out', False)
+        
+        robustness_improvement = 0.0
+        if not baseline_success and enhanced_success:
+            robustness_improvement = 1.0
+        elif baseline_success and enhanced_success:
+            # Both succeeded - compare efficiency
+            baseline_decisions = baseline_result.get('decisions_made', 1)
+            enhanced_decisions = enhanced_result.get('decisions_made', 1)
+            robustness_improvement = max(0.0, (baseline_decisions - enhanced_decisions) / baseline_decisions)
+        
+        return {
+            'scale_factor': scale_factor,
+            'problem_size': len(problem['vertices']),
+            'overhead_factor': overhead_factor,
+            'robustness_improvement': robustness_improvement,
+            'baseline_success': baseline_success,
+            'enhanced_success': enhanced_success,
+            'cost_benefit_ratio': robustness_improvement / max(overhead_factor - 1.0, 0.001),
+            'deployment_recommended': robustness_improvement > (overhead_factor - 1.0) * 0.5
+        }
+    
+    def _analyze_scalability_trends(self, scaling_analysis: List[Dict]) -> Dict:
+        """Analyze trends in scalability characteristics."""
+        if not scaling_analysis:
+            return {}
+        
+        scale_factors = [point['scale_factor'] for point in scaling_analysis]
+        overhead_factors = [point['overhead_factor'] for point in scaling_analysis]
+        robustness_improvements = [point['robustness_improvement'] for point in scaling_analysis]
+        
+        return {
+            'overhead_trend': self._calculate_trend(scale_factors, overhead_factors),
+            'robustness_trend': self._calculate_trend(scale_factors, robustness_improvements),
+            'scalability_score': self._calculate_scalability_score(scaling_analysis),
+            'optimal_scale_range': self._identify_optimal_scale_range(scaling_analysis)
+        }
+    
+    def _calculate_trend(self, x_values: List[float], y_values: List[float]) -> Dict:
+        """Calculate simple linear trend characteristics."""
+        if len(x_values) < 2:
+            return {'slope': 0.0, 'direction': 'stable'}
+        
+        # Simple linear regression slope calculation
+        n = len(x_values)
+        sum_x = sum(x_values)
+        sum_y = sum(y_values)
+        sum_xy = sum(x * y for x, y in zip(x_values, y_values))
+        sum_x2 = sum(x * x for x in x_values)
+        
+        slope = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x) if (n * sum_x2 - sum_x * sum_x) != 0 else 0.0
+        
+        if slope > 0.1:
+            direction = 'increasing'
+        elif slope < -0.1:
+            direction = 'decreasing'
+        else:
+            direction = 'stable'
+        
+        return {'slope': slope, 'direction': direction}
+    
+    def _determine_deployment_boundaries(self, scaling_analysis: List[Dict]) -> Dict:
+        """Determine optimal deployment boundaries based on scaling analysis."""
+        recommended_scales = [point for point in scaling_analysis if point['deployment_recommended']]
+        
+        if not recommended_scales:
+            return {
+                'has_viable_deployment_range': False,
+                'recommended_scale_range': None,
+                'deployment_guidance': 'Enhanced solver not recommended at tested scales'
+            }
+        
+        min_viable_scale = min(point['scale_factor'] for point in recommended_scales)
+        max_viable_scale = max(point['scale_factor'] for point in recommended_scales)
+        
+        return {
+            'has_viable_deployment_range': True,
+            'recommended_scale_range': (min_viable_scale, max_viable_scale),
+            'optimal_scale_point': max(recommended_scales, key=lambda x: x['cost_benefit_ratio'])['scale_factor'],
+            'deployment_guidance': f'Enhanced solver recommended for scale factors {min_viable_scale:.1f}x to {max_viable_scale:.1f}x'
+        }
+    
+    def generate_scalability_report(self) -> str:
+        """Generate comprehensive scalability analysis report."""
+        if not self.scalability_data:
+            return "No scalability data available for analysis."
+        
+        report = ["=== Scalability Analysis Report ===", ""]
+        
+        for analysis in self.scalability_data:
+            report.append(f"Problem: {analysis['base_problem_id']}")
+            
+            trends = analysis['scalability_trends']
+            report.append(f"  Overhead Trend: {trends.get('overhead_trend', {}).get('direction', 'unknown')}")
+            report.append(f"  Robustness Trend: {trends.get('robustness_trend', {}).get('direction', 'unknown')}")
+            report.append(f"  Scalability Score: {trends.get('scalability_score', 0.0):.3f}")
+            
+            boundaries = analysis['deployment_boundaries']
+            report.append(f"  Deployment Viable: {boundaries.get('has_viable_deployment_range', False)}")
+            if boundaries.get('has_viable_deployment_range', False):
+                scale_range = boundaries.get('recommended_scale_range', (0, 0))
+                report.append(f"  Recommended Scale Range: {scale_range[0]:.1f}x to {scale_range[1]:.1f}x")
+            
+            report.append("")
+        
+        return "\n".join(report)
+\end{lstlisting}
