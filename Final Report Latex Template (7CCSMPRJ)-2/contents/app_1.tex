@@ -4587,3 +4587,602 @@ class ScalabilityAnalyser:
         return "\n".join(report)
 \end{lstlisting}
 
+% Additional Appendix Sections for Missing Listings References
+
+\section{Implementation Integration Solutions}
+\label{appendix:implementation-integration}
+
+\subsection{Symmetry Breaking Integration Implementation}
+\label{appendix:symmetry-integration}
+
+\begin{lstlisting}[language=Python, caption=Symmetry Breaking Integration for Predictable Behaviour]
+class SymmetryIntegrationManager:
+    """
+    Manages integration between lexicographic symmetry breaking 
+    and graph-aware variable ordering for predictable solver behaviour.
+    """
+    
+    def __init__(self, centrality_priorities: List[int]):
+        self.centrality_priorities = centrality_priorities
+        self.symmetry_constraints = []
+        self.priority_reconciliation_cache = {}
+        
+    def reconcile_priorities_with_symmetry(self, 
+                                         symmetry_constraints: List[Tuple[int, int]],
+                                         assignments: Dict[int, bool]) -> List[int]:
+        """
+        Resolve conflicts between centrality-based priorities and 
+        symmetry breaking constraints through hierarchical decision strategies.
+        """
+        # Cache key for reconciliation
+        constraint_key = tuple(sorted(symmetry_constraints))
+        assignment_key = tuple(sorted(assignments.keys()))
+        cache_key = (constraint_key, assignment_key)
+        
+        if cache_key in self.priority_reconciliation_cache:
+            return self.priority_reconciliation_cache[cache_key]
+        
+        # Apply symmetry constraints whilst preserving centrality benefits
+        reconciled_priorities = []
+        remaining_variables = [v for v in self.centrality_priorities if v not in assignments]
+        
+        # Process variables in centrality order, checking symmetry compliance
+        for variable in remaining_variables:
+            if self._satisfies_symmetry_constraints(variable, symmetry_constraints, assignments):
+                reconciled_priorities.append(variable)
+            else:
+                # Find symmetric alternative with similar centrality
+                symmetric_alternative = self._find_symmetric_alternative(
+                    variable, symmetry_constraints, remaining_variables
+                )
+                if symmetric_alternative:
+                    reconciled_priorities.append(symmetric_alternative)
+        
+        # Cache the reconciliation
+        self.priority_reconciliation_cache[cache_key] = reconciled_priorities
+        return reconciled_priorities
+    
+    def _satisfies_symmetry_constraints(self, variable: int, 
+                                      constraints: List[Tuple[int, int]],
+                                      assignments: Dict[int, bool]) -> bool:
+        """Check if variable selection satisfies lexicographic ordering constraints"""
+        for v1, v2 in constraints:
+            if variable == v2 and v1 not in assignments:
+                # Cannot assign v2 before v1 in lexicographic order
+                return False
+        return True
+    
+    def _find_symmetric_alternative(self, blocked_variable: int,
+                                   constraints: List[Tuple[int, int]],
+                                   available_variables: List[int]) -> Optional[int]:
+        """Find alternative variable that respects symmetry whilst maintaining centrality benefits"""
+        # Look for variables with similar centrality ranking
+        blocked_index = self.centrality_priorities.index(blocked_variable)
+        
+        # Search nearby variables in centrality ranking
+        search_radius = min(5, len(available_variables) // 4)
+        for offset in range(1, search_radius + 1):
+            for direction in [-1, 1]:
+                candidate_index = blocked_index + (direction * offset)
+                if 0 <= candidate_index < len(self.centrality_priorities):
+                    candidate = self.centrality_priorities[candidate_index]
+                    if (candidate in available_variables and 
+                        self._satisfies_symmetry_constraints(candidate, constraints, {})):
+                        return candidate
+        
+        return None
+\end{lstlisting}
+
+\subsection{Timing Coordination Implementation}
+\label{appendix:timing-coordination}
+
+\begin{lstlisting}[language=Python, caption=Adaptive Timing Synchronisation for Consistent Overhead]
+class TimingCoordinator:
+    """
+    Manages adaptive preprocessing timing to maintain consistent 
+    performance characteristics across diverse problem scales.
+    """
+    
+    def __init__(self, overhead_budget: float = 1.5):
+        self.overhead_budget = overhead_budget  # Maximum acceptable overhead factor
+        self.preprocessing_history = []
+        self.analysis_depth_adjustments = {}
+        
+    def coordinate_preprocessing_timing(self, vertices: List[int], 
+                                      edges: List[Tuple[int, int]],
+                                      complexity_estimate: float) -> Dict[str, Any]:
+        """
+        Implement budget-based preprocessing that scales analysis complexity appropriately.
+        """
+        problem_size = len(vertices)
+        estimated_base_time = self._estimate_baseline_time(problem_size, len(edges))
+        
+        # Allocate preprocessing budget based on problem characteristics
+        preprocessing_budget = estimated_base_time * (self.overhead_budget - 1.0)
+        
+        # Adjust analysis depth based on complexity and budget
+        analysis_config = self._determine_analysis_depth(
+            complexity_estimate, preprocessing_budget, problem_size
+        )
+        
+        # Track timing decisions for adaptive improvement
+        timing_decision = {
+            'problem_size': problem_size,
+            'complexity_estimate': complexity_estimate,
+            'preprocessing_budget': preprocessing_budget,
+            'analysis_config': analysis_config,
+            'timestamp': time.time()
+        }
+        
+        self.preprocessing_history.append(timing_decision)
+        return analysis_config
+    
+    def _estimate_baseline_time(self, num_vertices: int, num_edges: int) -> float:
+        """Estimate baseline DPLL execution time for budget allocation"""
+        # Empirically derived timing model for moderate-scale problems
+        base_complexity = num_vertices * math.log(num_vertices)
+        edge_factor = 1.0 + (num_edges / (num_vertices * (num_vertices - 1) / 2))
+        
+        estimated_time = (base_complexity * edge_factor) / 1000.0  # Scale to seconds
+        return max(0.1, estimated_time)  # Minimum budget
+    
+    def _determine_analysis_depth(self, complexity: float, 
+                                budget: float, problem_size: int) -> Dict[str, Any]:
+        """Configure analysis depth based on budget and complexity"""
+        config = {
+            'enable_betweenness': False,
+            'enable_closeness': False,
+            'enable_clustering': False,
+            'centrality_sample_size': min(problem_size, 50),
+            'max_analysis_time': budget
+        }
+        
+        # High complexity problems get more sophisticated analysis
+        if complexity > 0.7 and budget > 0.5:
+            config['enable_betweenness'] = True
+            config['centrality_sample_size'] = min(problem_size, 100)
+        
+        if complexity > 0.8 and budget > 1.0:
+            config['enable_closeness'] = True
+        
+        # Adjust sample size based on available budget
+        if budget < 0.3:
+            config['centrality_sample_size'] = min(config['centrality_sample_size'], 25)
+        
+        return config
+    
+    def monitor_preprocessing_efficiency(self, actual_time: float, 
+                                       planned_config: Dict[str, Any]) -> None:
+        """Monitor preprocessing efficiency and adjust future decisions"""
+        if self.preprocessing_history:
+            last_decision = self.preprocessing_history[-1]
+            efficiency_ratio = actual_time / last_decision['preprocessing_budget']
+            
+            # Store efficiency data for adaptive adjustment
+            problem_size = last_decision['problem_size']
+            if problem_size not in self.analysis_depth_adjustments:
+                self.analysis_depth_adjustments[problem_size] = []
+            
+            self.analysis_depth_adjustments[problem_size].append({
+                'efficiency_ratio': efficiency_ratio,
+                'config': planned_config,
+                'complexity': last_decision['complexity_estimate']
+            })
+            
+            # Limit history size
+            if len(self.analysis_depth_adjustments[problem_size]) > 10:
+                self.analysis_depth_adjustments[problem_size].pop(0)
+\end{lstlisting}
+
+\subsection{Interface Compatibility Implementation}
+\label{appendix:interface-compatibility}
+
+\begin{lstlisting}[language=Python, caption=Interface Compatibility for Drop-in Replacement Operation]
+class CompatibilityWrapper:
+    """
+    Ensures enhanced solver instances function as drop-in replacements 
+    for standard DPLL solvers without requiring external modifications.
+    """
+    
+    def __init__(self, enhanced_solver):
+        self.enhanced_solver = enhanced_solver
+        self.fallback_mode = False
+        self.compatibility_stats = {
+            'fallback_activations': 0,
+            'interface_errors': 0,
+            'method_compatibility_checks': 0
+        }
+    
+    def solve(self, vertices: List[int], edges: List[Tuple[int, int]], 
+             num_colors: int, timeout: float = 30.0) -> Dict[str, Any]:
+        """
+        Drop-in replacement solve method maintaining external API compatibility.
+        """
+        try:
+            # Attempt enhanced solving with robustness features
+            if not self.fallback_mode:
+                result = self._solve_with_enhancements(vertices, edges, num_colors, timeout)
+                
+                # Validate result format for compatibility
+                if self._validate_result_format(result):
+                    return result
+                else:
+                    self.compatibility_stats['interface_errors'] += 1
+                    return self._fallback_solve(vertices, edges, num_colors, timeout)
+            else:
+                return self._fallback_solve(vertices, edges, num_colors, timeout)
+                
+        except Exception as e:
+            # Graceful degradation to baseline functionality
+            self.compatibility_stats['fallback_activations'] += 1
+            self.fallback_mode = True
+            return self._fallback_solve(vertices, edges, num_colors, timeout)
+    
+    def _solve_with_enhancements(self, vertices: List[int], edges: List[Tuple[int, int]], 
+                               num_colors: int, timeout: float) -> Dict[str, Any]:
+        """Enhanced solving with full robustness features"""
+        start_time = time.time()
+        
+        # Use enhanced solver capabilities
+        satisfiable, assignment = self.enhanced_solver.solve_graph_coloring_with_robustness(
+            vertices, edges, num_colors, timeout
+        )
+        
+        end_time = time.time()
+        
+        # Format result for compatibility
+        result = {
+            'satisfiable': satisfiable,
+            'assignment': assignment if satisfiable else {},
+            'solving_time': end_time - start_time,
+            'solver_type': 'enhanced',
+            'enhancement_active': True,
+            'statistics': self.enhanced_solver.get_comprehensive_statistics()
+        }
+        
+        return result
+    
+    def _fallback_solve(self, vertices: List[int], edges: List[Tuple[int, int]], 
+                       num_colors: int, timeout: float) -> Dict[str, Any]:
+        """Fallback to baseline DPLL functionality"""
+        start_time = time.time()
+        
+        # Use baseline solver as fallback
+        baseline_solver = DPLLSolver(verbose=False)
+        satisfiable, assignment = baseline_solver.solve_graph_coloring(
+            vertices, edges, num_colors, timeout
+        )
+        
+        end_time = time.time()
+        
+        result = {
+            'satisfiable': satisfiable,
+            'assignment': assignment if satisfiable else {},
+            'solving_time': end_time - start_time,
+            'solver_type': 'baseline_fallback',
+            'enhancement_active': False,
+            'statistics': {}
+        }
+        
+        return result
+    
+    def _validate_result_format(self, result: Dict[str, Any]) -> bool:
+        """Validate result format matches expected API contract"""
+        try:
+            required_fields = ['satisfiable', 'assignment', 'solving_time']
+            for field in required_fields:
+                if field not in result:
+                    return False
+            
+            if not isinstance(result['satisfiable'], bool):
+                return False
+            
+            if not isinstance(result['solving_time'], (int, float)):
+                return False
+            
+            # Validate assignment format if satisfiable
+            if result['satisfiable'] and result['assignment']:
+                for vertex, color in result['assignment'].items():
+                    if not isinstance(vertex, int) or not isinstance(color, int):
+                        return False
+            
+            return True
+            
+        except Exception:
+            return False
+\end{lstlisting}
+
+\section{Error Handling and Robustness Implementation}
+\label{appendix:error-handling}
+
+\subsection{Circuit Breaker Implementation}
+\label{appendix:circuit-breaker}
+
+\begin{lstlisting}[language=Python, caption=Circuit Breaker Pattern for Reliable Operation]
+class GraphAwareCircuitBreaker:
+    """
+    Implements circuit breaker patterns to handle failures in graph analysis 
+    components whilst maintaining overall solver reliability.
+    """
+    
+    def __init__(self, failure_threshold: int = 3, recovery_timeout: float = 60.0):
+        self.failure_threshold = failure_threshold
+        self.recovery_timeout = recovery_timeout
+        
+        # Circuit state tracking
+        self.component_states = {
+            'graph_analysis': 'closed',
+            'centrality_computation': 'closed', 
+            'priority_ordering': 'closed',
+            'conflict_enhancement': 'closed'
+        }
+        
+        self.failure_counts = {component: 0 for component in self.component_states}
+        self.last_failure_times = {component: 0 for component in self.component_states}
+        
+        # Diagnostic information
+        self.failure_diagnostics = {}
+    
+    def execute_with_protection(self, component_name: str, 
+                              operation: Callable, *args, **kwargs) -> Tuple[bool, Any]:
+        """
+        Execute operation with circuit breaker protection.
+        Returns (success, result) tuple.
+        """
+        current_time = time.time()
+        
+        # Check if circuit is open
+        if self._is_circuit_open(component_name, current_time):
+            return False, None
+        
+        try:
+            # Attempt the operation
+            result = operation(*args, **kwargs)
+            
+            # Reset failure count on success
+            self._record_success(component_name)
+            return True, result
+            
+        except Exception as e:
+            # Record failure and update circuit state
+            self._record_failure(component_name, e, current_time)
+            return False, None
+    
+    def _is_circuit_open(self, component_name: str, current_time: float) -> bool:
+        """Check if circuit breaker is currently open for component"""
+        state = self.component_states[component_name]
+        
+        if state == 'closed':
+            return False
+        elif state == 'open':
+            # Check if recovery timeout has elapsed
+            last_failure = self.last_failure_times[component_name]
+            if current_time - last_failure > self.recovery_timeout:
+                self.component_states[component_name] = 'half_open'
+                return False
+            return True
+        elif state == 'half_open':
+            return False
+        
+        return False
+    
+    def _record_success(self, component_name: str) -> None:
+        """Record successful operation and reset circuit if needed"""
+        self.failure_counts[component_name] = 0
+        
+        if self.component_states[component_name] == 'half_open':
+            self.component_states[component_name] = 'closed'
+    
+    def _record_failure(self, component_name: str, exception: Exception, 
+                       timestamp: float) -> None:
+        """Record operation failure and update circuit state"""
+        self.failure_counts[component_name] += 1
+        self.last_failure_times[component_name] = timestamp
+        
+        # Store diagnostic information
+        if component_name not in self.failure_diagnostics:
+            self.failure_diagnostics[component_name] = []
+        
+        self.failure_diagnostics[component_name].append({
+            'timestamp': timestamp,
+            'exception_type': type(exception).__name__,
+            'exception_message': str(exception),
+            'failure_count': self.failure_counts[component_name]
+        })
+        
+        # Open circuit if failure threshold exceeded
+        if self.failure_counts[component_name] >= self.failure_threshold:
+            self.component_states[component_name] = 'open'
+    
+    def get_circuit_status(self) -> Dict[str, Any]:
+        """Get comprehensive circuit breaker status"""
+        return {
+            'component_states': self.component_states.copy(),
+            'failure_counts': self.failure_counts.copy(),
+            'failure_diagnostics': self.failure_diagnostics,
+            'active_failures': sum(1 for state in self.component_states.values() 
+                                 if state in ['open', 'half_open'])
+        }
+    
+    def force_circuit_reset(self, component_name: str) -> None:
+        """Manually reset circuit breaker for component"""
+        self.component_states[component_name] = 'closed'
+        self.failure_counts[component_name] = 0
+        self.last_failure_times[component_name] = 0
+\end{lstlisting}
+
+\subsection{Graceful Degradation Implementation}
+\label{appendix:graceful-degradation}
+
+\begin{lstlisting}[language=Python, caption=Graceful Degradation for Worst-Case Scenarios]
+class GracefulDegradationManager:
+    """
+    Implements comprehensive degradation strategies to ensure reliable operation 
+    when graph-aware optimisations encounter computational limitations.
+    """
+    
+    def __init__(self):
+        self.degradation_levels = {
+            'full_enhancement': 0,
+            'reduced_analysis': 1, 
+            'basic_enhancement': 2,
+            'baseline_fallback': 3
+        }
+        
+        self.current_level = 0
+        self.degradation_triggers = {
+            'timeout_threshold': 30.0,
+            'memory_threshold': 0.8,  # 80% of available memory
+            'failure_rate_threshold': 0.3,
+            'performance_degradation_threshold': 3.0  # 3x baseline time
+        }
+        
+        self.degradation_history = []
+        self.performance_monitoring = {
+            'recent_times': [],
+            'baseline_estimate': 1.0,
+            'current_overhead': 1.0
+        }
+    
+    def evaluate_degradation_need(self, current_performance: Dict[str, Any],
+                                system_state: Dict[str, Any]) -> bool:
+        """
+        Evaluate whether degradation is needed based on current conditions.
+        """
+        degradation_needed = False
+        triggers_activated = []
+        
+        # Check timeout risk
+        if current_performance.get('execution_time', 0) > self.degradation_triggers['timeout_threshold']:
+            degradation_needed = True
+            triggers_activated.append('timeout_risk')
+        
+        # Check memory usage
+        memory_usage = system_state.get('memory_usage_ratio', 0)
+        if memory_usage > self.degradation_triggers['memory_threshold']:
+            degradation_needed = True
+            triggers_activated.append('memory_pressure')
+        
+        # Check failure rate
+        failure_rate = system_state.get('recent_failure_rate', 0)
+        if failure_rate > self.degradation_triggers['failure_rate_threshold']:
+            degradation_needed = True
+            triggers_activated.append('high_failure_rate')
+        
+        # Check performance degradation
+        overhead = current_performance.get('overhead_ratio', 1.0)
+        if overhead > self.degradation_triggers['performance_degradation_threshold']:
+            degradation_needed = True
+            triggers_activated.append('excessive_overhead')
+        
+        if degradation_needed:
+            self._record_degradation_trigger(triggers_activated)
+        
+        return degradation_needed
+    
+    def apply_degradation(self, target_level: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Apply appropriate degradation level based on current conditions.
+        """
+        if target_level is None:
+            target_level = min(self.current_level + 1, 3)
+        
+        self.current_level = target_level
+        
+        # Configure solver based on degradation level
+        degradation_config = self._get_degradation_config(target_level)
+        
+        # Record degradation event
+        self.degradation_history.append({
+            'timestamp': time.time(),
+            'level': target_level,
+            'config': degradation_config,
+            'trigger_reason': 'manual' if target_level is not None else 'automatic'
+        })
+        
+        return degradation_config
+    
+    def _get_degradation_config(self, level: int) -> Dict[str, Any]:
+        """Get configuration for specific degradation level"""
+        configs = {
+            0: {  # Full enhancement
+                'enable_graph_analysis': True,
+                'enable_centrality_computation': True,
+                'enable_conflict_enhancement': True,
+                'enable_symmetry_breaking': True,
+                'preprocessing_budget_factor': 1.0,
+                'description': 'Full graph-aware optimisation active'
+            },
+            1: {  # Reduced analysis
+                'enable_graph_analysis': True,
+                'enable_centrality_computation': True,
+                'enable_conflict_enhancement': False,
+                'enable_symmetry_breaking': False,
+                'preprocessing_budget_factor': 0.5,
+                'description': 'Reduced analysis to improve performance'
+            },
+            2: {  # Basic enhancement
+                'enable_graph_analysis': True,
+                'enable_centrality_computation': False,
+                'enable_conflict_enhancement': False,
+                'enable_symmetry_breaking': False,
+                'preprocessing_budget_factor': 0.2,
+                'description': 'Basic degree-based ordering only'
+            },
+            3: {  # Baseline fallback
+                'enable_graph_analysis': False,
+                'enable_centrality_computation': False,
+                'enable_conflict_enhancement': False,
+                'enable_symmetry_breaking': False,
+                'preprocessing_budget_factor': 0.0,
+                'description': 'Standard DPLL operation with full compatibility'
+            }
+        }
+        
+        return configs.get(level, configs[3])
+    
+    def monitor_performance_improvement(self, execution_time: float, 
+                                      success: bool) -> None:
+        """Monitor whether degradation is improving performance"""
+        self.performance_monitoring['recent_times'].append(execution_time)
+        
+        # Keep only recent performance data
+        if len(self.performance_monitoring['recent_times']) > 10:
+            self.performance_monitoring['recent_times'].pop(0)
+        
+        # Calculate current average performance
+        if self.performance_monitoring['recent_times']:
+            current_avg = sum(self.performance_monitoring['recent_times']) / len(self.performance_monitoring['recent_times'])
+            self.performance_monitoring['current_overhead'] = current_avg / self.performance_monitoring['baseline_estimate']
+    
+    def attempt_recovery(self) -> bool:
+        """Attempt to recover to higher enhancement level"""
+        if self.current_level > 0:
+            # Test higher level temporarily
+            test_level = self.current_level - 1
+            return True
+        return False
+    
+    def _record_degradation_trigger(self, triggers: List[str]) -> None:
+        """Record what triggered degradation for analysis"""
+        pass  # Implementation would log triggers for debugging
+    
+    def get_degradation_report(self) -> str:
+        """Generate degradation status report"""
+        current_config = self._get_degradation_config(self.current_level)
+        
+        report = [
+            "=== Graceful Degradation Status ===",
+            f"Current Level: {self.current_level} ({current_config['description']})",
+            f"Degradation Events: {len(self.degradation_history)}",
+            f"Current Overhead: {self.performance_monitoring['current_overhead']:.2f}x",
+            ""
+        ]
+        
+        if self.degradation_history:
+            report.append("Recent degradation events:")
+            for event in self.degradation_history[-3:]:
+                report.append(f"  Level {event['level']}: {event['config']['description']}")
+        
+        return "\n".join(report)
+\end{lstlisting}

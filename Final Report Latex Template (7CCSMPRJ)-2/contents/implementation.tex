@@ -2,7 +2,7 @@
 
 \subsection{Enhanced CDCL Engine Implementation}
 
-The enhanced CDCL engine extends the existing DPLL solver by integrating graph-aware capabilities specifically designed to trade average-case performance for worst-case robustness in graph coloring problems. Rather than pursuing universal performance improvements, this implementation focuses on achieving reliable solution capability on challenging instances that frequently defeat baseline approaches, accepting predictable performance overhead as a necessary cost for robustness guarantees.
+The enhanced CDCL engine extends the existing DPLL solver by integrating graph-aware capabilities specifically designed to trade average-case performance for worst-case robustness in graph colouring problems. Rather than pursuing universal performance improvements, this implementation focuses on achieving reliable solution capability on challenging instances that frequently defeat baseline approaches, accepting predictable performance overhead as a necessary cost for robustness guarantees.
 
 \subsubsection{Robustness-Oriented Architecture}
 
@@ -10,7 +10,7 @@ The implementation builds upon the existing \texttt{DPLLSolver} class using inhe
 
 The architecture prioritizes reliability over speed through several key design decisions. First, comprehensive graph preprocessing accepts initial computational overhead to enable robust variable ordering throughout the search process. Second, centrality-based variable prioritization provides structured search guidance that prevents the exponential degradation commonly observed in baseline approaches on challenging instances. Third, enhanced conflict analysis incorporates graph structural information to improve learned clause quality, reducing backtracking frequency on dense connectivity patterns.
 
-The dual-mode design allows systematic comparison of robustness versus performance characteristics, enabling empirical validation of the trade-off hypothesis. The class maintains enhanced statistics for monitoring performance overhead while tracking robustness metrics such as success rates on challenging instances, timeout avoidance, and graceful degradation behavior.
+The dual-mode design allows systematic comparison of robustness versus performance characteristics, enabling empirical validation of the trade-off hypothesis. The class maintains enhanced statistics for monitoring performance overhead while tracking robustness metrics such as success rates on challenging instances, timeout avoidance, and graceful degradation behaviour.
 
 \subsubsection{Centrality-Based Variable Priority System for Robustness}
 
@@ -18,7 +18,7 @@ The variable priority system represents the primary mechanism for trading averag
 
 For moderate-scale problems (50-90 vertices), the system performs detailed betweenness centrality computation alongside degree analysis, creating composite priority scores that effectively identify structurally critical vertices. This preprocessing investment proves essential for robust performance on challenging instances where naive variable ordering leads to exponential search space explosion. The composite scoring combines local connectivity (degree) with global structural importance (betweenness) using empirically validated weights that optimize robustness rather than average-case speed.
 
-The priority calculation deliberately emphasizes structural stability over computational efficiency. Rather than implementing dynamic priority updates that could introduce inconsistency, the system establishes fixed priority rankings during preprocessing and maintains them throughout the search process. This approach sacrifices potential optimization opportunities in favor of predictable, reliable behavior that supports the worst-case robustness objectives.
+The priority calculation deliberately emphasizes structural stability over computational efficiency. Rather than implementing dynamic priority updates that could introduce inconsistency, the system establishes fixed priority rankings during preprocessing and maintains them throughout the search process. This approach sacrifices potential optimization opportunities in favour of predictable, reliable behaviour that supports the worst-case robustness objectives.
 
 \subsubsection{Enhanced Search Algorithm with Robustness Focus}
 
@@ -26,7 +26,7 @@ The core solving algorithm integrates graph-aware variable selection with tradit
 
 The variable selection mechanism prioritizes vertices with high centrality scores, ensuring that structurally important decisions occur early in the search tree. This strategy proves particularly effective on dense random graphs and high-connectivity instances where baseline approaches encounter exponential degradation. While this approach introduces modest overhead on simple instances, it provides crucial robustness guarantees on challenging problems where baseline methods fail completely.
 
-The search algorithm incorporates timeout protection and graceful degradation mechanisms to ensure reliable operation across diverse problem characteristics. Rather than pursuing aggressive optimization strategies that could introduce unpredictable behavior, the implementation focuses on consistent, dependable performance that supports deployment in reliability-critical applications.
+The search algorithm incorporates timeout protection and graceful degradation mechanisms to ensure reliable operation across diverse problem characteristics. Rather than pursuing aggressive optimization strategies that could introduce unpredictable behaviour, the implementation focuses on consistent, dependable performance that supports deployment in reliability-critical applications.
 
 \subsubsection{Conflict Analysis for Consistent Performance}
 
@@ -34,17 +34,17 @@ The conflict analysis system implements streamlined approaches that maintain eff
 
 This approach balances learning effectiveness with implementation reliability by concentrating on conflicts involving structurally important vertices rather than implementing complex graph traversal algorithms. The system tracks recent decisions and high-priority variables, incorporating them systematically into learned clauses to improve future search efficiency without introducing unpredictable performance variations.
 
-The conflict analysis maintains detailed statistics on backtracking patterns and learned clause effectiveness, enabling systematic evaluation of how graph-aware optimizations impact search behavior. This monitoring framework supports the empirical validation of robustness improvements while quantifying the performance costs associated with enhanced reliability.
+The conflict analysis maintains detailed statistics on backtracking patterns and learned clause effectiveness, enabling systematic evaluation of how graph-aware optimizations impact search behaviour. This monitoring framework supports the empirical validation of robustness improvements while quantifying the performance costs associated with enhanced reliability.
 
 \subsubsection{Performance Monitoring and Trade-off Analysis}
 
-The implementation includes comprehensive monitoring infrastructure specifically designed to characterize the performance-robustness trade-off that defines this research. The statistics collection system tracks both traditional SAT solving metrics and graph-specific performance indicators, enabling systematic analysis of how preprocessing overhead translates to improved worst-case behavior (see \hyperref[appendix:performance-monitoring]{Appendix A.5}).
+The implementation includes comprehensive monitoring infrastructure specifically designed to characterize the performance-robustness trade-off that defines this research. The statistics collection system tracks both traditional SAT solving metrics and graph-specific performance indicators, enabling systematic analysis of how preprocessing overhead translates to improved worst-case behaviour (see \hyperref[appendix:performance-monitoring]{Appendix A.5}).
 
 This monitoring framework captures preprocessing time, variable priority cache performance, conflict analysis effectiveness, and overall execution time with high precision timing instrumentation. The system distinguishes between overhead costs (preprocessing, priority computation) and robustness benefits (successful completion on challenging instances, reduced backtracking), providing empirical data that validates the trade-off hypothesis central to this work.
 
 The monitoring system also implements timeout detection and failure mode analysis to characterize instances where baseline approaches fail completely while enhanced approaches succeed. This capability enables systematic documentation of robustness improvements that justify the average-case performance costs inherent in graph-aware optimization.
 
-\subsection{Specialized Graph Coloring Features for Robustness}
+\subsection{Specialized Graph Colouring Features for Robustness}
 
 \subsubsection{Graph Analysis Pipeline Implementation}
 
@@ -62,9 +62,9 @@ Maintaining consistent variable indexing between graph representation and SAT en
 
 The technical solution implements comprehensive index validation and cross-referencing mechanisms that detect and correct indexing inconsistencies before they impact solver reliability. This approach accepts modest computational overhead to prevent subtle bugs that could undermine robustness on specific problem instances, aligning with the overall philosophy of trading performance for reliability.
 
-\paragraph{Symmetry Breaking Integration for Predictable Behavior}
+\paragraph{Symmetry Breaking Integration for Predictable Behaviour}
 
-Integrating lexicographic symmetry breaking with graph-aware variable ordering required careful coordination to ensure predictable solver behavior. The implementation resolves potential conflicts between centrality-based priorities and symmetry breaking constraints through hierarchical decision strategies that maintain both optimization objectives (see \hyperref[appendix:symmetry-integration]{Appendix E.2}).
+Integrating lexicographic symmetry breaking with graph-aware variable ordering required careful coordination to ensure predictable solver behaviour. The implementation resolves potential conflicts between centrality-based priorities and symmetry breaking constraints through hierarchical decision strategies that maintain both optimization objectives (see \hyperref[appendix:symmetry-integration]{Appendix E.2}).
 
 The technical solution employs priority reconciliation mechanisms that respect symmetry breaking requirements while preserving graph-aware ordering benefits. This approach ensures that robustness improvements remain effective even when symmetry breaking constraints modify the natural variable ordering suggested by centrality analysis.
 
@@ -78,7 +78,7 @@ The timing synchronization system monitors preprocessing efficiency and adjusts 
 
 Maintaining interface compatibility with existing solver infrastructure required careful design that preserves external API contracts while enabling internal robustness enhancements. The implementation ensures that enhanced solver instances function as drop-in replacements for standard DPLL solvers without requiring modifications to existing test frameworks or benchmark runners (see \hyperref[appendix:interface-compatibility]{Appendix E.4}).
 
-The solution implements interface preservation through method signature compatibility and behavioral consistency, ensuring that robustness improvements never compromise basic solver functionality. The integration solutions provide clear fallback mechanisms that maintain system reliability when enhancements encounter operational difficulties, supporting the worst-case robustness objectives.
+The solution implements interface preservation through method signature compatibility and behavioural consistency, ensuring that robustness improvements never compromise basic solver functionality. The integration solutions provide clear fallback mechanisms that maintain system reliability when enhancements encounter operational difficulties, supporting the worst-case robustness objectives.
 
 \subsection{Error Handling and Robustness Guarantees}
 
@@ -94,4 +94,4 @@ The implementation includes comprehensive degradation strategies that ensure rel
 
 This degradation framework supports the worst-case robustness objectives by ensuring that enhanced solver instances never perform worse than baseline implementations, even when optimizations fail to provide benefits. The graceful degradation mechanisms include timeout detection, memory usage monitoring, and performance threshold checking that trigger automatic fallback when optimization costs exceed acceptable limits.
 
-The robustness guarantees extend beyond algorithmic correctness to include operational reliability under diverse deployment conditions. The implementation provides predictable behavior characteristics that support deployment in reliability-critical applications where solution failure represents unacceptable risk, justifying the average-case performance costs through worst-case reliability benefits.
+The robustness guarantees extend beyond algorithmic correctness to include operational reliability under diverse deployment conditions. The implementation provides predictable behaviour characteristics that support deployment in reliability-critical applications where solution failure represents unacceptable risk, justifying the average-case performance costs through worst-case reliability benefits.
