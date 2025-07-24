@@ -8,7 +8,7 @@ The enhanced SAT solver employs a fundamentally different design philosophy that
 
 The architectural approach addresses the fundamental design challenge that moderate-scale graph coloring problems exhibit high variance in difficulty, with some instances proving computationally intractable for standard DPLL approaches while others solve trivially. The hybrid design combines proven DPLL algorithmic foundations with comprehensive graph-aware preprocessing that trades computational investment for robustness guarantees across diverse problem characteristics.
 
-The component hierarchy implements explicit separation between robustness-enhancing features and baseline functionality: the \texttt{GraphStructureAnalyzer} performs comprehensive structural analysis accepting preprocessing overhead, the \texttt{RobustnessPreprocessor} applies reliability-focused optimizations, and the \texttt{ReliabilityEnhancedSolver} integrates these insights while maintaining fallback capabilities. This modular architecture enables systematic evaluation of trade-off effectiveness while ensuring operational reliability under all conditions.
+The component hierarchy implements explicit separation between robustness-enhan\-cing features and baseline functionality: the \texttt{GraphStructureAnalyzer} performs comprehensive structural analysis accepting preprocessing overhead, the \texttt{Robustness\-Pre\-processor} applies reliability-focused optimizations, and the \texttt{Reliability\-Enhanced\-Solver} integrates these insights while maintaining fallback capabilities. This modular architecture enables systematic evaluation of trade-off effectiveness while ensuring operational reliability under all conditions.
 
 \subsubsection{Reliability-First Component Design}
 
@@ -16,39 +16,48 @@ The system architecture prioritizes component reliability through redundant anal
 
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[node distance=2.5cm, auto]
+\begin{tikzpicture}[
+    node distance=2.5cm, 
+    auto, 
+    every node/.style={font=\normalfont},
+    >=Stealth
+]
     % Define styles
-    \tikzstyle{robust} = [rectangle, draw, fill=green!20, text width=3cm, text centered, rounded corners, minimum height=1.2cm]
-    \tikzstyle{fallback} = [rectangle, draw, fill=orange!20, text width=2.5cm, text centered, rounded corners, minimum height=1cm]
-    \tikzstyle{baseline} = [rectangle, draw, fill=blue!20, text width=2.5cm, text centered, rounded corners, minimum height=1cm]
-    \tikzstyle{arrow} = [thick,->,>=stealth]
-    \tikzstyle{dashed} = [thick,-->,>=stealth, dashed]
+    \tikzset{
+        robust/.style={rectangle, draw, fill=green!20, text width=3cm, align=center, rounded corners, minimum height=1.2cm},
+        fallback/.style={rectangle, draw, fill=orange!20, text width=2.5cm, align=center, rounded corners, minimum height=1cm},
+        baseline/.style={rectangle, draw, fill=blue!20, text width=2.5cm, align=center, rounded corners, minimum height=1cm}
+    }
     
     % Main robust components
     \node [robust] (input) {Graph Input\\with Validation};
-    \node [robust, below of=input] (analyzer) {Comprehensive\\Structure Analysis\\(15-20\% overhead)};
-    \node [robust, below of=analyzer] (preprocessor) {Robustness-Focused\\Preprocessing};
-    \node [robust, below of=preprocessor] (solver) {Enhanced Solver\\with Guarantees};
-    \node [robust, below of=solver] (output) {Guaranteed\\Solution};
+    \node [robust, below=of input] (analyzer) {Comprehensive\\Structure Analysis\\(15-20\% overhead)};
+    \node [robust, below=of analyzer] (preprocessor) {Robustness-Focused\\Preprocessing};
+    \node [robust, below=of preprocessor] (solver) {Enhanced Solver\\with Guarantees};
+    \node [robust, below=of solver] (output) {Guaranteed\\Solution};
     
     % Fallback components
-    \node [fallback, right of=analyzer, xshift=3cm] (simple) {Simple Degree\\Analysis};
-    \node [fallback, right of=preprocessor, xshift=3cm] (minimal) {Minimal\\Preprocessing};
-    \node [baseline, right of=solver, xshift=3cm] (dpll) {Baseline\\DPLL};
+    \node [fallback, right=3cm of analyzer] (simple) {Simple Degree\\Analysis};
+    \node [fallback, right=3cm of preprocessor] (minimal) {Minimal\\Preprocessing};
+    \node [baseline, right=3cm of solver] (dpll) {Baseline\\DPLL};
     
     % Main flow
-    \draw [arrow] (input) -- (analyzer);
-    \draw [arrow] (analyzer) -- (preprocessor);
-    \draw [arrow] (preprocessor) -- (solver);
-    \draw [arrow] (solver) -- (output);
+    \draw [thick, ->] (input) -- (analyzer);
+    \draw [thick, ->] (analyzer) -- (preprocessor);
+    \draw [thick, ->] (preprocessor) -- (solver);
+    \draw [thick, ->] (solver) -- (output);
     
-    % Fallback paths
-    \draw [dashed] (analyzer) -- node[above] {failure} (simple);
-    \draw [dashed] (preprocessor) -- node[above] {failure} (minimal);
-    \draw [dashed] (solver) -- node[above] {failure} (dpll);
-    \draw [dashed] (simple) |- (solver);
-    \draw [dashed] (minimal) |- (solver);
-    \draw [dashed] (dpll) |- (output);
+    % Fallback paths (using anchor points to avoid overlapping)
+    \draw [thick, dashed, ->] (analyzer.east) -- node[above] {failure} (simple.west);
+    \draw [thick, dashed, ->] (preprocessor.east) -- node[above] {failure} (minimal.west);
+    \draw [thick, dashed, ->] (solver.east) -- node[above] {failure} (dpll.west);
+    
+    % Straight vertical connections between fallback components
+    \draw [thick, dashed, ->] (simple.south) -- (minimal.north);
+    \draw [thick, dashed, ->] (minimal.south) -- (dpll.north);
+    
+    % Final connection from baseline DPLL to output
+    \draw [thick, dashed, ->] (dpll.south) -- ++(0,-0.5) -| (output.north east);
     
 \end{tikzpicture}
 \caption{Robustness-Oriented Architecture with Fallback Guarantees}
@@ -67,7 +76,7 @@ Budget allocation employs adaptive strategies that scale analysis complexity bas
 
 \subsubsection{Centrality-Based Robustness Enhancement}
 
-The centrality computation design prioritizes thoroughness over efficiency to ensure robust variable ordering that prevents the exponential search space explosion commonly observed in baseline approaches on challenging instances. The \texttt{RobustCentralityAnalyzer} implements comprehensive analysis that computes multiple centrality measures simultaneously, creating composite priority scores optimized for worst-case reliability.
+The centrality computation design prioritizes thoroughness over efficiency to ensure robust variable ordering that prevents the exponential search space explosion commonly observed in baseline approaches on challenging instances. The \texttt{RobustCentrality\-Analyzer} implements comprehensive analysis that computes multiple centrality measures simultaneously, creating composite priority scores optimized for worst-case reliability.
 
 The design deliberately employs computationally expensive betweenness centrality calculation for moderate-scale problems, accepting 15-20\% preprocessing overhead to ensure robust variable selection on high-connectivity instances. This approach contrasts with efficiency-focused designs that minimize preprocessing costs, instead prioritizing the structural understanding necessary for reliable performance on challenging graph topologies.
 

@@ -22,31 +22,33 @@
 % This section sets up global document options, packages, and custom commands.
 
 % Core Packages (kclthesis might already load some, but these are safe)
-\usepackage[utf8]{inputenc} % Allows direct input of UTF-8 characters (e.g., accents).
-\usepackage[T1]{fontenc}    % Ensures proper font encoding for various characters.
+% Font and encoding first
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 
-% Math Packages
-\usepackage{amsmath}        % Provides environments for multi-line equations and more.
-\usepackage{amsfonts}       % For additional math fonts (e.g., blackboard bold).
-\usepackage{amssymb}        % For additional math symbols.
+% Math packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
 
-% Graphics and Floats
-\usepackage{graphicx}       % Essential for including images (\includegraphics).
-\usepackage{float}          % Provides more control over figure/table placement (e.g., [H] here).
-\usepackage{subcaption}     % For creating subfigures and subtables.
-\usepackage{graphbox}       % Added from your original, ensures it's included
-\usepackage{pgfplots}
+% Graphics
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{graphbox}
+
+% TikZ/PGF
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta}
+\usepackage{pgfplots}
 \usetikzlibrary{arrows.meta}
 \pgfplotsset{compat=1.18}
-% Hyperlinks and Cross-referencing
-% IMPORTANT: Removed this line as 'hidelinks' is now in \documentclass and kclthesis loads hyperref.
-% \usepackage{hyperref}
-% REMOVED: \usepackage{hyperref}  <-- This was a duplicate, and is now handled globally by \documentclass.
-\usepackage{listings}
-\usepackage{xcolor}
 
+% Colors and listings
+\usepackage{xcolor}
+\usepackage{listings}
+
+% Single lstset configuration
 \lstset{
     language=Python,
     basicstyle=\ttfamily\small,
@@ -59,33 +61,11 @@
     breaklines=true,
     showstringspaces=false
 }
-\usepackage{url}            
-% For better formatting of URLs.
-\usepackage{hyperref}
-\usepackage{listings}
-\usepackage{xcolor}
 
-% Configure hyperref for better cross-referencing
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,      
-    urlcolor=cyan,
-    citecolor=red,
-}
-
-% Configure listings for better code display
-\lstset{
-    basicstyle=\ttfamily\footnotesize,
-    breaklines=true,
-    frame=single,
-    numbers=left,
-    numberstyle=\tiny,
-    captionpos=b
-}
-% --- Bibliography Setup (Using BibLaTeX for IEEE style) ---
-\usepackage[backend=biber, style=ieee, sorting=none]{biblatex} % <-- CHANGED style to ieee and sorting to none
-\addbibresource{contents/references.bib} % <-- Set this to your actual references file name and path
+% Bibliography
+\usepackage[backend=biber, style=ieee, sorting=none]{biblatex}
+\addbibresource{contents/references.bib}
+% <-- Set this to your actual references file name and path
                                          % (e.g., 'contents/myreferences.bib' if you renamed it)
 
 % Nomenclature & Glossaries (from your original template)
@@ -125,7 +105,6 @@
 \def\equalDistrib{\,{\buildrel \Delta \over =}\,}
 \numberwithin{equation}{section}
 % Re-adding \def\red and \def\blue based on previous errors, assuming kclthesis might use them internally
-\usepackage{xcolor} % Make sure xcolor is loaded if \textcolor is used.
 \def\blue#1{\textcolor{blue}{#1}} % Keep these if kclthesis depends on them,
 \def\red#1{\textcolor{red}{#1}}   % but ensure your actual content does not use \red for placeholders.
 

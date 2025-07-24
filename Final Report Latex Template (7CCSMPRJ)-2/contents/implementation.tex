@@ -34,7 +34,7 @@ The conflict analysis system implements streamlined approaches that maintain eff
 
 This approach balances learning effectiveness with implementation reliability by concentrating on conflicts involving structurally important vertices rather than implementing complex graph traversal algorithms. The system tracks recent decisions and high-priority variables, incorporating them systematically into learned clauses to improve future search efficiency without introducing unpredictable performance variations.
 
-The conflict analysis maintains detailed statistics on backtracking patterns and learned clause effectiveness, enabling systematic evaluation of how graph-aware optimizations impact search behaviour. This monitoring framework supports the empirical validation of robustness improvements while quantifying the performance costs associated with enhanced reliability.
+The conflict analysis maintains detailed statistics on backtracking patterns and lear\-ned clause effectiveness, enabling systematic evaluation of how graph-aware optimizations impact search behaviour. This monitoring framework supports the empirical validation of robustness improvements while quantifying the performance costs associated with enhanced reliability.
 
 \subsubsection{Performance Monitoring and Trade-off Analysis}
 
@@ -60,7 +60,7 @@ The pipeline includes validation mechanisms and fallback strategies to ensure re
 
 Maintaining consistent variable indexing between graph representation and SAT encoding proved critical for reliable solver operation. The implementation employs systematic index mapping that preserves graph vertex identities throughout the transformation process, ensuring that centrality-based priorities correctly correspond to SAT variables regardless of input graph formatting (see \hyperref[appendix:variable-indexing]{Appendix E.1}).
 
-The technical solution implements comprehensive index validation and cross-referencing mechanisms that detect and correct indexing inconsistencies before they impact solver reliability. This approach accepts modest computational overhead to prevent subtle bugs that could undermine robustness on specific problem instances, aligning with the overall philosophy of trading performance for reliability.
+The technical solution implements comprehensive index validation and cross-ref\-er\-enc\-ing mechanisms that detect and correct indexing inconsistencies before they impact solver reliability. This approach accepts modest computational overhead to prevent subtle bugs that could undermine robustness on specific problem instances, aligning with the overall philosophy of trading performance for reliability.
 
 \paragraph{Symmetry Breaking Integration for Predictable Behaviour}
 

@@ -20,15 +20,16 @@ The runtime performance analysis demonstrates a consistent and predictable perfo
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|l|c|c|c|c|}
+\small
+\begin{tabular}{|c|c|c|c|c|}
 \hline
-\textbf{Graph Size} & \textbf{Enhanced Time (s)} & \textbf{Baseline Time (s)} & \textbf{Overhead Factor} & \textbf{Success Rate} \\
+\textbf{Size} & \textbf{Enhanced (s)} & \textbf{Baseline (s)} & \textbf{Factor} & \textbf{Success} \\
 \hline
-50 vertices & 4.14 ± 0.12 & 2.84 ± 0.08 & 1.46x & 100\% \\
-60 vertices & 8.34 ± 0.11 & 5.75 ± 0.03 & 1.45x & 100\% \\
-70 vertices & 17.26 ± 0.77 & 11.68 ± 0.09 & 1.48x & 100\% \\
-80 vertices & 31.04 ± 0.02 & 21.24 ± 0.02 & 1.46x & 100\% \\
-90 vertices & 70.86 ± 2.54 & 48.13 ± 1.32 & 1.47x & 100\% \\
+50v & 4.14 ± 0.12 & 2.84 ± 0.08 & 1.46x & 100\% \\
+60v & 8.34 ± 0.11 & 5.75 ± 0.03 & 1.45x & 100\% \\
+70v & 17.26 ± 0.77 & 11.68 ± 0.09 & 1.48x & 100\% \\
+80v & 31.04 ± 0.02 & 21.24 ± 0.02 & 1.46x & 100\% \\
+90v & 70.86 ± 2.54 & 48.13 ± 1.32 & 1.47x & 100\% \\
 \hline
 \end{tabular}
 \caption{Scaling analysis demonstrating consistent overhead factor across problem sizes}
@@ -47,13 +48,14 @@ The enhanced solver demonstrates significant robustness improvements on structur
 
 \begin{table}[h]
 \centering
+\small
 \begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{Problem Instance} & \textbf{Enhanced Result} & \textbf{Baseline Result} & \textbf{Enhanced Time} & \textbf{Baseline Time} \\
+\textbf{Problem} & \textbf{Enhanced} & \textbf{Baseline} & \textbf{Enh. Time} & \textbf{Base. Time} \\
 \hline
-Random 20v Dense & SUCCESS & FAILED & 0.014s & 0.093s (timeout) \\
-Random 30v Medium & SUCCESS & FAILED & 0.039s & 0.167s (timeout) \\
-Random 40v Sparse & SUCCESS & SUCCESS & 0.039s & 0.026s \\
+Rand. 20v Dense & SUCCESS & FAILED & 0.014s & 0.093s (TO) \\
+Rand. 30v Medium & SUCCESS & FAILED & 0.039s & 0.167s (TO) \\
+Rand. 40v Sparse & SUCCESS & SUCCESS & 0.039s & 0.026s \\
 Triangle 3v & SUCCESS & SUCCESS & 0.001s & 0.000s \\
 Path 5v & SUCCESS & SUCCESS & 0.001s & 0.001s \\
 \hline
