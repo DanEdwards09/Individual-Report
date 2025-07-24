@@ -196,13 +196,8 @@
 % Insert more section if necessary if more appendix sections are needed
 % Remove or remark the following two lines if appendix is not necessary
 \appendix
-\include{contents/app_1} % Make sure 'contents/app_1.tex' exists if this is included
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+\addcontentsline{toc}{section}{Appendix}
+\section*{Appendix}
+\include{contents/app_1}
 
 \end{document}

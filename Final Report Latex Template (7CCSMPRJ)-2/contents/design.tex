@@ -4,15 +4,15 @@
 
 \subsubsection{Trade-off Driven Design Philosophy}
 
-The enhanced SAT solver employs a fundamentally different design philosophy that prioritizes worst-case robustness over average-case performance optimization. Rather than pursuing universal speed improvements, the architecture deliberately accepts predictable performance overhead in exchange for guaranteed solution capability on challenging instances that frequently defeat baseline approaches. This design philosophy represents a strategic shift from optimization-focused to reliability-focused solver architecture.
+The enhanced SAT solver employs a fundamentally different design philosophy that prioritises worst-case robustness over average-case performance optimisation. Rather than pursuing universal speed improvements, the architecture deliberately accepts predictable performance overhead in exchange for guaranteed solution capability on challenging instances that frequently defeat baseline approaches. This design philosophy represents a strategic shift from optimisation-focused to reliability-focused solver architecture.
 
-The architectural approach addresses the fundamental design challenge that moderate-scale graph coloring problems exhibit high variance in difficulty, with some instances proving computationally intractable for standard DPLL approaches while others solve trivially. The hybrid design combines proven DPLL algorithmic foundations with comprehensive graph-aware preprocessing that trades computational investment for robustness guarantees across diverse problem characteristics.
+The architectural approach addresses the fundamental design challenge that moderate-scale graph colouring problems exhibit high variance in difficulty, with some instances proving computationally intractable for standard DPLL approaches while others solve trivially. The hybrid design combines proven DPLL algorithmic foundations with comprehensive graph-aware preprocessing that trades computational investment for robustness guarantees across diverse problem characteristics.
 
-The component hierarchy implements explicit separation between robustness-enhan\-cing features and baseline functionality: the \texttt{GraphStructureAnalyzer} performs comprehensive structural analysis accepting preprocessing overhead, the \texttt{Robustness\-Pre\-processor} applies reliability-focused optimizations, and the \texttt{Reliability\-Enhanced\-Solver} integrates these insights while maintaining fallback capabilities. This modular architecture enables systematic evaluation of trade-off effectiveness while ensuring operational reliability under all conditions.
+The component hierarchy implements explicit separation between robustness-enhan\-cing features and baseline functionality: the \texttt{GraphStructureAnalyzer} performs comprehensive structural analysis accepting preprocessing overhead, the \texttt{Robustness\-Pre\-processor} applies reliability-focused optimisations, and the \texttt{Reliability\-Enhanced\-Solver} integrates these insights while maintaining fallback capabilities. This modular architecture enables systematic evaluation of trade-off effectiveness while ensuring operational reliability under all conditions.
 
 \subsubsection{Reliability-First Component Design}
 
-The system architecture prioritizes component reliability through redundant analysis pathways and graceful degradation mechanisms that ensure solver operation continues even when individual optimizations fail. Each component implements comprehensive error handling and fallback strategies that maintain solution capability while providing detailed diagnostic information for trade-off analysis.
+The system architecture prioritises component reliability through redundant analysis pathways and graceful degradation mechanisms that ensure solver operation continues even when individual optimisations fail. Each component implements comprehensive error handling and fallback strategies that maintain solution capability while providing detailed diagnostic information for trade-off analysis.
 
 \begin{figure}[htbp]
 \centering
@@ -64,11 +64,11 @@ The system architecture prioritizes component reliability through redundant anal
 \label{fig:robust_architecture}
 \end{figure}
 
-The design ensures that enhanced features never compromise basic solver functionality through comprehensive circuit breaker patterns and performance monitoring that automatically disable problematic optimizations when they exceed acceptable overhead thresholds. This approach guarantees that the enhanced solver never performs worse than baseline implementations, even when graph-aware optimizations prove ineffective.
+The design ensures that enhanced features never compromise basic solver functionality through comprehensive circuit breaker patterns and performance monitoring that automatically disable problematic optimisations when they exceed acceptable overhead thresholds. This approach guarantees that the enhanced solver never performs worse than baseline implementations, even when graph-aware optimisations prove ineffective.
 
 \subsubsection{Predictable Overhead Design}
 
-The architecture implements systematic overhead budgeting that ensures preprocessing costs remain proportional to problem scale and complexity. Rather than pursuing unlimited optimization depth, the design establishes clear computational budgets that maintain acceptable trade-off ratios across diverse problem characteristics.
+The architecture implements systematic overhead budgeting that ensures preprocessing costs remain proportional to problem scale and complexity. Rather than pursuing unlimited optimisation depth, the design establishes clear computational budgets that maintain acceptable trade-off ratios across diverse problem characteristics.
 
 Budget allocation employs adaptive strategies that scale analysis complexity based on problem characteristics: simple structured graphs receive minimal preprocessing to avoid unnecessary overhead, while challenging instances with high connectivity receive comprehensive analysis that justifies the computational investment through improved robustness. This adaptive approach ensures that overhead remains predictable and proportional to robustness benefits.
 
@@ -76,43 +76,43 @@ Budget allocation employs adaptive strategies that scale analysis complexity bas
 
 \subsubsection{Centrality-Based Robustness Enhancement}
 
-The centrality computation design prioritizes thoroughness over efficiency to ensure robust variable ordering that prevents the exponential search space explosion commonly observed in baseline approaches on challenging instances. The \texttt{RobustCentrality\-Analyzer} implements comprehensive analysis that computes multiple centrality measures simultaneously, creating composite priority scores optimized for worst-case reliability.
+The centrality computation design prioritises thoroughness over efficiency to ensure robust variable ordering that prevents the exponential search space explosion commonly observed in baseline approaches on challenging instances. The \texttt{RobustCentrality\-Analyzer} implements comprehensive analysis that computes multiple centrality measures simultaneously, creating composite priority scores optimised for worst-case reliability.
 
-The design deliberately employs computationally expensive betweenness centrality calculation for moderate-scale problems, accepting 15-20\% preprocessing overhead to ensure robust variable selection on high-connectivity instances. This approach contrasts with efficiency-focused designs that minimize preprocessing costs, instead prioritizing the structural understanding necessary for reliable performance on challenging graph topologies.
+The design deliberately employs computationally expensive betweenness centrality calculation for moderate-scale problems, accepting 15-20\% preprocessing overhead to ensure robust variable selection on high-connectivity instances. This approach contrasts with efficiency-focused designs that minimise preprocessing costs, instead prioritising the structural understanding necessary for reliable performance on challenging graph topologies.
 
-Centrality scoring combines multiple metrics through empirically validated weights that optimize robustness characteristics rather than average-case performance. The composite scoring mechanism ensures that variable ordering decisions reflect both local connectivity patterns and global structural importance, providing the systematic search guidance necessary to avoid exponential degradation on dense connectivity patterns.
+Centrality scoring combines multiple metrics through empirically validated weights that optimise robustness characteristics rather than average-case performance. The composite scoring mechanism ensures that variable ordering decisions reflect both local connectivity patterns and global structural importance, providing the systematic search guidance necessary to avoid exponential degradation on dense connectivity patterns.
 
 \subsubsection{Preprocessing Design for Worst-Case Scenarios}
 
-The preprocessing design targets the specific graph characteristics that reliably defeat baseline approaches, implementing comprehensive analysis that identifies and mitigates structural complexity before search begins. The \texttt{RobustnessPreprocessor} employs systematic structural characterization that accepts computational overhead to prevent runtime failures on challenging instances.
+The preprocessing design targets the specific graph characteristics that reliably defeat baseline approaches, implementing comprehensive analysis that identifies and mitigates structural complexity before search begins. The \texttt{RobustnessPreprocessor} employs systematic structural characterisation that accepts computational overhead to prevent runtime failures on challenging instances.
 
-Preprocessing strategies focus on density analysis, connectivity pattern recognition, and structural complexity assessment that guide subsequent optimization decisions. Rather than pursuing general-purpose problem reduction, the design specifically targets graph characteristics associated with exponential DPLL behavior: high edge density, uniform degree distribution, and limited structural regularity that defeats simple ordering heuristics.
+Preprocessing strategies focus on density analysis, connectivity pattern recognition, and structural complexity assessment that guide subsequent optimisation decisions. Rather than pursuing general-purpose problem reduction, the design specifically targets graph characteristics associated with exponential DPLL behaviour: high edge density, uniform degree distribution, and limited structural regularity that defeats simple ordering heuristics.
 
 The preprocessing framework implements comprehensive validation and fallback mechanisms that ensure reliable operation across diverse graph structures. When sophisticated analysis encounters computational limitations or produces invalid results, the system automatically falls back to simpler but reliable degree-based approaches that maintain robustness guarantees while adapting to computational constraints.
 
 \subsubsection{Variable Ordering Design for Reliability}
 
-The variable ordering design prioritizes consistency and predictability over dynamic optimization, establishing fixed priority rankings during preprocessing that provide stable search guidance throughout the solving process. This approach sacrifices potential runtime optimization opportunities in favor of predictable, systematic behavior that supports worst-case robustness objectives.
+The variable ordering design prioritises consistency and predictability over dynamic optimisation, establishing fixed priority rankings during preprocessing that provide stable search guidance throughout the solving process. This approach sacrifices potential runtime optimisation opportunities in favour of predictable, systematic behaviour that supports worst-case robustness objectives.
 
-The ordering mechanism implements hierarchical decision strategies that respect both graph-theoretic priorities and SAT solving requirements, ensuring that centrality-based selection integrates seamlessly with standard DPLL branching strategies. Priority reconciliation mechanisms resolve conflicts between optimization objectives while maintaining both structural guidance and algorithmic correctness.
+The ordering mechanism implements hierarchical decision strategies that respect both graph-theoretic priorities and SAT solving requirements, ensuring that centrality-based selection integrates seamlessly with standard DPLL branching strategies. Priority reconciliation mechanisms resolve conflicts between optimisation objectives while maintaining both structural guidance and algorithmic correctness.
 
-Caching design optimizations store computed variable orderings in persistent data structures that eliminate redundant analysis during backtracking, reducing the runtime overhead associated with comprehensive preprocessing. The caching strategy balances memory usage against computational efficiency while ensuring that preprocessing investment provides sustained benefits throughout the search process.
+Caching design optimisations store computed variable orderings in persistent data structures that eliminate redundant analysis during backtracking, reducing the runtime overhead associated with comprehensive preprocessing. The caching strategy balances memory usage against computational efficiency while ensuring that preprocessing investment provides sustained benefits throughout the search process.
 
 \subsection{Conflict Resolution and Learning Design}
 
 \subsubsection{Conservative Learning Strategy}
 
-The conflict resolution design deliberately emphasizes simplicity and reliability over sophisticated learning mechanisms, reflecting the design philosophy that moderate-scale problems benefit more from improved variable ordering than from complex clause learning infrastructure. The implementation leverages existing DPLL backtracking mechanisms rather than implementing advanced CDCL features that could introduce unpredictable performance characteristics.
+The conflict resolution design deliberately emphasises simplicity and reliability over sophisticated learning mechanisms, reflecting the design philosophy that moderate-scale problems benefit more from improved variable ordering than from complex clause learning infrastructure. The implementation leverages existing DPLL backtracking mechanisms rather than implementing advanced CDCL features that could introduce unpredictable performance characteristics.
 
-The design choice to utilize systematic backtracking rather than non-chronological mechanisms stems from the observation that graph-aware variable ordering reduces conflict frequency sufficiently to make sophisticated learning unnecessary for the target problem scale. This approach maintains algorithmic predictability while focusing optimization effort on preprocessing strategies that provide more significant robustness benefits.
+The design choice to utilise systematic backtracking rather than non-chronological mechanisms stems from the observation that graph-aware variable ordering reduces conflict frequency sufficiently to make sophisticated learning unnecessary for the target problem scale. This approach maintains algorithmic predictability while focusing optimisation effort on preprocessing strategies that provide more significant robustness benefits.
 
 Learning mechanism design focuses on conflict clauses that incorporate graph structural information through predictable, well-tested approaches rather than implementing complex implication graph analysis that could introduce variable performance characteristics. The system tracks recent decisions and structurally important variables, incorporating them systematically into learned clauses without introducing unpredictable algorithmic complexity.
 
 \subsubsection{Robustness-Oriented Backtracking}
 
-The backtracking design implements comprehensive state management that ensures reliable operation during search space exploration while maintaining detailed statistics for trade-off analysis. Rather than pursuing aggressive optimization strategies that could introduce unpredictable behavior, the implementation focuses on consistent, dependable backtracking that supports systematic search exploration.
+The backtracking design implements comprehensive state management that ensures reliable operation during search space exploration while maintaining detailed statistics for trade-off analysis. Rather than pursuing aggressive optimisation strategies that could introduce unpredictable behaviour, the implementation focuses on consistent, dependable backtracking that supports systematic search exploration.
 
-State preservation mechanisms ensure that graph-aware priorities remain consistent throughout the search process, preventing the inconsistent behavior that could undermine robustness guarantees. The backtracking framework maintains comprehensive diagnostic information that enables systematic analysis of search behavior and optimization effectiveness.
+State preservation mechanisms ensure that graph-aware priorities remain consistent throughout the search process, preventing the inconsistent behaviour that could undermine robustness guarantees. The backtracking framework maintains comprehensive diagnostic information that enables systematic analysis of search behaviour and optimisation effectiveness.
 
 The design includes timeout protection and graceful degradation strategies that ensure reliable operation when search encounters computationally challenging regions of the solution space. These mechanisms provide operational confidence for deployment in reliability-critical applications where solution failure represents unacceptable risk.
 
@@ -120,9 +120,9 @@ The design includes timeout protection and graceful degradation strategies that 
 
 \subsubsection{Backward Compatibility Design}
 
-The system integration design prioritizes complete backward compatibility with existing DPLL solver infrastructure, ensuring that the enhanced solver functions as a drop-in replacement while providing additional robustness capabilities. The design principle of graceful enhancement ensures that all existing DPLL functionality remains unchanged and accessible, with graph-aware features providing supplementary optimization rather than fundamental algorithmic replacement.
+The system integration design prioritises complete backward compatibility with existing DPLL solver infrastructure, ensuring that the enhanced solver functions as a drop-in replacement while providing additional robustness capabilities. The design principle of graceful enhancement ensures that all existing DPLL functionality remains unchanged and accessible, with graph-aware features providing supplementary optimisation rather than fundamental algorithmic replacement.
 
-Interface design emphasizes clean separation between graph analysis and SAT solving concerns through well-defined method signatures and data structures that maintain existing API contracts. The enhanced solver preserves all standard solver interfaces while adding configuration options that enable systematic evaluation of trade-off characteristics.
+Interface design emphasises clean separation between graph analysis and SAT solving concerns through well-defined method signatures and data structures that maintain existing API contracts. The enhanced solver preserves all standard solver interfaces while adding configuration options that enable systematic evaluation of trade-off characteristics.
 
 \begin{figure}[htbp]
 \centering
@@ -159,23 +159,23 @@ Interface design emphasizes clean separation between graph analysis and SAT solv
 
 The fallback strategy ensures robust operation through multiple degradation levels that maintain solution capability under all operational conditions. When graph awareness is disabled, the solver operates identically to the baseline DPLL implementation with no performance penalty. When graph analysis fails or produces invalid results, the system defaults to standard variable ordering heuristics while maintaining enhanced conflict resolution capabilities. When preprocessing encounters computational limitations, the solver continues with original problem formulation while providing diagnostic information for trade-off analysis.
 
-The degradation framework implements comprehensive monitoring that tracks the effectiveness of each optimization level, enabling systematic evaluation of trade-off characteristics while ensuring that enhanced features never compromise basic solver functionality. This approach provides operational confidence for deployment scenarios where reliability requirements take precedence over performance optimization.
+The degradation framework implements comprehensive monitoring that tracks the effectiveness of each optimisation level, enabling systematic evaluation of trade-off characteristics while ensuring that enhanced features never compromise basic solver functionality. This approach provides operational confidence for deployment scenarios where reliability requirements take precedence over performance optimisation.
 
 \subsection{Design Rationale and Trade-off Justification}
 
 \subsubsection{Alternative Approaches Considered}
 
-The design evaluation considered several alternative approaches before settling on the robustness-oriented architecture. Pure performance optimization strategies that minimize preprocessing overhead were rejected because they failed to provide the reliability guarantees necessary for worst-case robustness. Sophisticated CDCL implementations with advanced learning mechanisms were rejected due to implementation complexity that exceeded the proportional benefits for moderate-scale problems.
+The design evaluation considered several alternative approaches before settling on the robustness-oriented architecture. Pure performance optimisation strategies that minimise preprocessing overhead were rejected because they failed to provide the reliability guarantees necessary for worst-case robustness. Sophisticated CDCL implementations with advanced learning mechanisms were rejected due to implementation complexity that exceeded the proportional benefits for moderate-scale problems.
 
-Dynamic optimization strategies that adaptively adjust processing based on runtime characteristics were considered but rejected due to unpredictable behavior that could undermine reliability guarantees. The chosen approach prioritizes predictable overhead and guaranteed capability over potentially superior but inconsistent performance characteristics.
+Dynamic optimisation strategies that adaptively adjust processing based on runtime characteristics were considered but rejected due to unpredictable behaviour that could undermine reliability guarantees. The chosen approach prioritises predictable overhead and guaranteed capability over potentially superior but inconsistent performance characteristics.
 
-Parallel processing and distributed solving approaches were evaluated but excluded from the design scope to maintain focus on graph-aware optimization strategies rather than computational scaling techniques. The design explicitly targets single-threaded execution with emphasis on algorithmic improvements rather than computational parallelization.
+Parallel processing and distributed solving approaches were evaluated but excluded from the design scope to maintain focus on graph-aware optimisation strategies rather than computational scaling techniques. The design explicitly targets single-threaded execution with emphasis on algorithmic improvements rather than computational parallelisation.
 
 \subsubsection{Justification for Robustness-First Design}
 
-The robustness-first design addresses the fundamental limitation that baseline DPLL approaches exhibit unpredictable failure modes on challenging graph coloring instances, creating deployment risks that outweigh average-case performance considerations. The systematic trade-off of 45-48\% average-case performance for 100\% solution reliability represents a rational design choice for applications where solution failure is unacceptable.
+The robustness-first design addresses the fundamental limitation that baseline DPLL approaches exhibit unpredictable failure modes on challenging graph colouring instances, creating deployment risks that outweigh average-case performance considerations. The systematic trade-off of 45-48\% average-case performance for 100\% solution reliability represents a rational design choice for applications where solution failure is unacceptable.
 
-The design choice to accept predictable overhead in exchange for reliability guarantees aligns with deployment scenarios where graph coloring represents a critical component of larger systems. In compiler optimization, scheduling applications, and resource management contexts, solution failure introduces systemic risks that justify moderate performance overhead in exchange for operational confidence.
+The design choice to accept predictable overhead in exchange for reliability guarantees aligns with deployment scenarios where graph colouring represents a critical component of larger systems. In compiler optimisation, scheduling applications, and resource management contexts, solution failure introduces systemic risks that justify moderate performance overhead in exchange for operational confidence.
 
 The comprehensive preprocessing approach provides systematic structural understanding that enables robust variable ordering across diverse graph topologies, addressing the fundamental limitation that naive heuristics perform unpredictably on challenging connectivity patterns. This investment in preprocessing depth provides sustained benefits throughout the search process while maintaining predictable cost characteristics.
 

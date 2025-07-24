@@ -1,16 +1,16 @@
 \section{Evaluation}
 
-This chapter presents a comprehensive empirical evaluation of the enhanced SAT solver's performance, analyzing experimental results from the systematic testing framework described in \hyperref[sec:testing]{Chapter 6}. The evaluation validates the hypothesis that graph-aware optimizations achieve improved worst-case robustness at the cost of average-case performance, establishing the enhanced solver as a reliability-focused alternative to baseline DPLL implementations for graph coloring applications.
+This chapter presents a comprehensive empirical evaluation of the enhanced SAT solver's performance, analysing experimental results from the systematic testing framework described in \hyperref[sec:testing]{Chapter 6}. The evaluation validates the hypothesis that graph-aware optimisations achieve improved worst-case robustness at the cost of average-case performance, establishing the enhanced solver as a reliability-focused alternative to baseline DPLL implementations for graph colouring applications.
 
 \subsection{Experimental Setup}
 
-The evaluation employs the three-tier testing framework established in \hyperref[sec:test-suite-implementation]{Section 6.3}, encompassing Quick Validation Tests for correctness verification, Reliability-Focused Comparison Tests for robustness assessment, and the Trade-off Analysis Suite for thesis-level evaluation. This evaluation strategy provides systematic coverage from basic functionality validation to extensive performance characterization across diverse problem instances, with particular focus on challenging scenarios that stress solver robustness.
+The evaluation employs the three-tier testing framework established in \hyperref[sec:test-suite-implementation]{Section 6.3}, encompassing Quick Validation Tests for correctness verification, Reliability-Focused Comparison Tests for robustness assessment, and the Trade-off Analysis Suite for thesis-level evaluation. This evaluation strategy provides systematic coverage from basic functionality validation to extensive performance characterisation across diverse problem instances, with particular focus on challenging scenarios that stress solver robustness.
 
-The experimental methodology builds upon the testing infrastructure detailed in \hyperref[sec:testing]{Chapter 6}, utilizing the Apple M4 MacBook environment with 16GB unified memory and Python 3.9 optimization protocols. Performance measurement employed high-precision timing instrumentation with 15-second timeout protection to capture solver failure modes, enabling analysis of both successful execution and timeout behavior patterns.
+The experimental methodology builds upon the testing infrastructure detailed in \hyperref[sec:testing]{Chapter 6}, utilising the Apple M4 MacBook environment with 16GB unified memory and Python 3.9 optimisation protocols. Performance measurement employed high-precision timing instrumentation with 15-second timeout protection to capture solver failure modes, enabling analysis of both successful execution and timeout behaviour patterns.
 
-The evaluation focuses on analyzing results from controlled experiments across vertex ranges from 50 to 90 vertices and comparative assessment on challenging instances up to 50 vertices. Graph categories include simple structured graphs (paths, cycles, triangles), random graphs with varying densities (sparse to dense), and specifically challenging instances designed to stress baseline solver limitations. Each experimental category targets different aspects of the performance-robustness trade-off central to this research.
+The evaluation focuses on analysing results from controlled experiments across vertex ranges from 50 to 90 vertices and comparative assessment on challenging instances up to 50 vertices. Graph categories include simple structured graphs (paths, cycles, triangles), random graphs with varying densities (sparse to dense), and specifically challenging instances designed to stress baseline solver limitations. Each experimental category targets different aspects of the performance-robustness trade-off central to this research.
 
-Statistical analysis employed a three-repetition protocol with confidence interval calculation for scalability experiments and timeout-protected single runs for challenging instance evaluation, enabling robust characterization of both average-case overhead and worst-case robustness improvements.
+Statistical analysis employed a three-repetition protocol with confidence interval calculation for scalability experiments and timeout-protected single runs for challenging instance evaluation, enabling robust characterisation of both average-case overhead and worst-case robustness improvements.
 
 \subsection{Performance Analysis}
 
@@ -36,9 +36,9 @@ The runtime performance analysis demonstrates a consistent and predictable perfo
 \label{tab:scaling_performance}
 \end{table}
 
-This performance pattern reflects the inherent cost of graph-aware preprocessing, where centrality computation, graph analysis, and variable priority calculation consume approximately 45-48\% additional computational resources across all tested scales. The consistency of this overhead factor demonstrates that preprocessing costs scale proportionally with problem complexity, indicating predictable performance characteristics rather than pathological degradation.
+The consistency of this overhead factor demonstrates that preprocessing costs scale proportionally with problem complexity, indicating predictable performance characteristics rather than pathological degradation.
 
-Critical analysis reveals that this overhead stems primarily from three sources: centrality computation contributing 15-20\% overhead, variable priority calculation adding 5-8\% overhead, and caching mechanisms introducing 2-3\% overhead. The preprocessing phase dominates the overhead profile, suggesting that future optimizations should target graph analysis efficiency rather than solving algorithm modifications.
+Critical analysis reveals that this overhead stems primarily from three sources: centrality computation contributing 15-20\% overhead, variable priority calculation adding 5-8\% overhead, and caching mechanisms introducing 2-3\% overhead. The preprocessing phase dominates the overhead profile, suggesting that future optimisations should target graph analysis efficiency rather than solving algorithm modifications.
 
 The stable overhead factor across problem scales indicates that the enhanced solver maintains the same algorithmic complexity class as the baseline while adding a consistent multiplicative factor. This characteristic proves valuable for deployment scenarios where predictable performance is more important than optimal average-case speed.
 
@@ -66,7 +66,7 @@ Path 5v & SUCCESS & SUCCESS & 0.001s & 0.001s \\
 
 The robustness improvements prove most significant on dense random graphs and medium-connectivity instances where baseline DPLL encounters exponential search space explosion. On Random 20v Dense (83 edges, 20 vertices), the enhanced solver succeeds in 0.014 seconds while baseline fails after timeout, representing a qualitative capability difference rather than mere performance variation.
 
-Analysis of failure modes reveals that baseline DPLL struggles with highly connected graphs where poor variable ordering leads to extensive backtracking and conflict generation. The enhanced solver's centrality-based variable ordering effectively guides search toward more promising regions of the solution space, avoiding the exponential blowup that defeats baseline approaches.
+Analysis of failure modes reveals that baseline DPLL struggles with highly connected graphs where poor variable ordering leads to extensive backtracking and conflict generation. The enhanced solver's centrality-based variable ordering effectively guides search toward more promising regions of the solution space, avoiding the exponential blow-up that defeats baseline approaches.
 
 Critical evaluation demonstrates that these robustness improvements justify the average-case overhead for applications where solution reliability takes precedence over execution speed. The enhanced solver provides "worst-case insurance" by guaranteeing solution capability on instances that completely defeat baseline approaches.
 
@@ -74,82 +74,84 @@ Critical evaluation demonstrates that these robustness improvements justify the 
 
 Memory consumption analysis reveals moderate additional resource requirements that scale predictably with problem complexity. The enhanced solver requires 25-35\% additional memory compared to baseline implementation, with peak usage remaining well within practical constraints at 847MB for 90-vertex problems.
 
-The memory overhead decomposes into three distinct components: baseline SAT solving infrastructure (60-65\% of total usage), graph analysis structures including adjacency representations and centrality computations (20-25\% of total usage), and optimization caches for variable priority mappings (10-15\% of total usage). This breakdown indicates that graph-aware optimizations introduce bounded memory overhead with clear component attribution.
+The memory overhead decomposes into three distinct components: baseline SAT solving infrastructure (60-65\% of total usage), graph analysis structures including adjacency representations and centrality computations (20-25\% of total usage), and optimisation caches for variable priority mappings (10-15\% of total usage). This breakdown indicates that graph-aware optimisations introduce bounded memory overhead with clear component attribution.
 
-Memory allocation efficiency demonstrates stable patterns across problem scales, with graph representation following O(V²) complexity for dense graphs and optimization structures scaling as O(V). The predictable memory growth pattern enables accurate resource planning for deployment scenarios and validates the practical feasibility of the graph-aware approach.
+Memory allocation efficiency demonstrates stable patterns across problem scales, with graph representation following O(V²) complexity for dense graphs and optimisation structures scaling as O(V). The predictable memory growth pattern enables accurate resource planning for deployment scenarios and validates the practical feasibility of the graph-aware approach.
 
-Garbage collection impact analysis shows improved memory locality in graph-aware data structures, resulting in fewer collection events compared to baseline implementations despite higher total allocation. This characteristic suggests that the structured memory access patterns introduced by graph analysis provide secondary benefits beyond the primary optimization objectives.
+Garbage collection impact analysis shows improved memory locality in graph-aware data structures, resulting in fewer collection events compared to baseline implementations despite higher total allocation. This characteristic suggests that the structured memory access patterns introduced by graph analysis provide secondary benefits beyond the primary optimisation objectives.
 
 \subsection{Comparative Evaluation}
 
 \subsubsection{Baseline Solver Limitations Analysis}
 
-Systematic comparison reveals fundamental limitations in baseline DPLL approaches when applied to graph coloring problems with challenging structural properties. The baseline solver demonstrates exponential degradation on dense random graphs, with decision counts growing rapidly and extensive conflict generation leading to timeout failures.
+Systematic comparison reveals fundamental limitations in baseline DPLL approaches when applied to graph colouring problems with challenging structural properties. The baseline solver demonstrates exponential degradation on dense random graphs, with decision counts growing rapidly and extensive conflict generation leading to timeout failures.
 
 Statistical analysis of baseline failure modes shows that Random 20v Dense instances generate 95 decisions and 96 conflicts before timeout, while Random 30v Medium instances require 119 decisions and 120 conflicts with similar failure outcomes. These patterns indicate that baseline DPLL lacks effective heuristics for managing high-connectivity graph structures where naive variable ordering leads to poor search space exploration.
 
-The baseline solver's brittleness emerges particularly on instances with edge densities exceeding 0.4, where the probability of conflict generation increases dramatically due to tight constraint interactions. This limitation represents a fundamental impediment to baseline DPLL deployment on real-world graph coloring applications where dense connectivity patterns commonly occur.
+The baseline solver's brittleness emerges particularly on instances with edge densities exceeding 0.4, where the probability of conflict generation increases dramatically due to tight constraint interactions. This limitation represents a fundamental impediment to baseline DPLL deployment on real-world graph colouring applications where dense connectivity patterns commonly occur.
 
-Performance variability analysis demonstrates that baseline approaches exhibit unpredictable behavior on challenging instances, with execution times ranging from successful completion in under 0.1 seconds to complete failure within timeout constraints. This unpredictability poses significant challenges for production deployment where reliable execution guarantees are required.
+Performance variability analysis demonstrates that baseline approaches exhibit unpredictable behaviour on challenging instances, with execution times ranging from successful completion in under 0.1 seconds to complete failure within timeout constraints. This unpredictability poses significant challenges for production deployment where reliable execution guarantees are required.
 
 \subsubsection{Enhanced Solver Positioning and Trade-offs}
 
-The enhanced solver occupies a distinct position in the graph coloring solution landscape, prioritizing reliability and robustness over raw performance optimization. Unlike general-purpose SAT solvers that target broad problem domains, the enhanced implementation specifically addresses graph coloring applications where solution guarantee takes precedence over execution speed.
+The enhanced solver occupies a distinct position in the graph colouring solution landscape, prioritising reliability and robustness over raw performance optimisation. Unlike general-purpose SAT solvers that target broad problem domains, the enhanced implementation specifically addresses graph colouring applications where solution guarantee takes precedence over execution speed.
 
-Comparative positioning analysis reveals that the enhanced solver fills a critical gap between unreliable fast heuristics and sophisticated but complex industrial SAT implementations. While greedy coloring algorithms achieve superior speed on simple instances, they lack completeness guarantees and optimality verification capabilities. Conversely, industrial CDCL solvers provide general-purpose robustness but require significant implementation complexity and domain-specific tuning.
+Comparative positioning analysis reveals that the enhanced solver fills a critical gap between unreliable fast heuristics and sophisticated but complex industrial SAT implementations. While greedy colouring algorithms achieve superior speed on simple instances, they lack completeness guarantees and optimality verification capabilities. Conversely, industrial CDCL solvers provide general-purpose robustness but require significant implementation complexity and domain-specific tuning.
 
-The enhanced solver's value proposition centers on predictable performance characteristics combined with guaranteed solution capability on challenging instances. The consistent 1.45x overhead factor enables accurate performance planning, while 100\% success rate provides deployment confidence for critical applications where solution failure represents unacceptable risk.
+The enhanced solver's value proposition centres on predictable performance characteristics combined with guaranteed solution capability on challenging instances. The consistent overhead factor (Table~\ref{tab:scaling_performance}) enables accurate performance planning, while the demonstrated success rate (Table~\ref{tab:robustness_comparison}) provides deployment confidence for critical applications where solution failure represents unacceptable risk.
 
-Strategic analysis suggests that the enhanced solver targets applications where graph coloring represents a critical component of larger systems, such as register allocation in compiler optimization, scheduling problems in resource management, and conflict resolution in distributed systems. In these contexts, the reliability guarantee justifies the moderate performance overhead.
+Strategic analysis suggests that the enhanced solver targets applications where graph colouring represents a critical component of larger systems, such as register allocation in compiler optimisation, scheduling problems in resource management, and conflict resolution in distributed systems. In these contexts, the reliability guarantee justifies the moderate performance overhead.
 
 \subsection{Ablation Studies}
 
 \subsubsection{Component-wise Performance Impact}
 
-Systematic ablation analysis isolates the contribution of individual optimization components to both average-case overhead and worst-case robustness improvements. Graph-aware preprocessing emerges as the dominant contributor to execution time overhead while providing the most significant robustness benefits on challenging instances.
+Systematic ablation analysis isolates the contribution of individual optimisation components to both average-case overhead and worst-case robustness improvements. Graph-aware preprocessing emerges as the dominant contributor to execution time overhead while providing the most significant robustness benefits on challenging instances.
 
-Preprocessing overhead analysis demonstrates 15-20\% execution time increase across all problem scales, primarily attributable to centrality computation and graph structural analysis. However, preprocessing enables successful solution of challenging instances that completely defeat configurations without graph awareness, indicating that preprocessing costs represent necessary investment for robustness capabilities.
+As shown in Table~\ref{tab:scaling_performance}, preprocessing emerges as the dominant contributor to execution time overhead while providing the most significant robustness benefits on challenging instances. However, preprocessing enables successful solution of challenging instances that completely defeat configurations without graph awareness, indicating that preprocessing costs represent necessary investment for robustness capabilities.
 
-Centrality-based variable ordering evaluation reveals 5-8\% execution time overhead with benefits concentrated on highly connected graph instances. The variable ordering optimization demonstrates the most favorable cost-benefit ratio among evaluated components, providing measurable robustness improvements while introducing minimal performance penalties on simple instances.
+The variable ordering optimisation demonstrates the most favourable cost-benefit ratio among evaluated components.
+
+Centrality-based variable ordering evaluation reveals 5-8\% execution time overhead with benefits concentrated on highly connected graph instances. The variable ordering optimisation demonstrates the most favourable cost-benefit ratio among evaluated components, providing measurable robustness improvements while introducing minimal performance penalties on simple instances.
 
 Caching mechanism analysis indicates 2-3\% performance impact with benefits emerging during backtracking-intensive search sequences. Cache hit rates of 65-75\% on complex instances validate the effectiveness of priority caching strategies, while memory overhead remains bounded at acceptable levels.
 
-\subsubsection{Optimization Synergy Analysis}
+\subsubsection{Optimisation Synergy Analysis}
 
-Comprehensive interaction analysis demonstrates that preprocessing and variable ordering optimizations exhibit positive synergy, with combined implementation providing 12-15\% additional robustness improvements beyond individual component contributions. This synergy validates the integrated optimization architecture and confirms that holistic graph-aware approaches achieve superior results compared to isolated optimization strategies.
+Comprehensive interaction analysis demonstrates that preprocessing and variable ordering optimisations exhibit positive synergy, with combined implementation providing 12-15\% additional robustness improvements beyond individual component contributions. This synergy validates the integrated optimisation architecture and confirms that holistic graph-aware approaches achieve superior results compared to isolated optimisation strategies.
 
 Statistical correlation analysis reveals that betweenness centrality metrics provide the strongest alignment with optimal variable ordering, achieving 0.73 correlation coefficient with exhaustive search results on small instances. Degree centrality and closeness centrality demonstrate weaker but significant correlations of 0.65 and 0.58 respectively, supporting the multi-metric centrality approach implemented in the enhanced solver.
 
-The synergy analysis confirms that graph structural information provides valuable guidance for SAT solving decisions, but only when integrated systematically across multiple optimization points. Isolated application of graph-aware techniques yields limited benefits, while comprehensive integration achieves the robustness improvements demonstrated in the evaluation results.
+The synergy analysis confirms that graph structural information provides valuable guidance for SAT solving decisions, but only when integrated systematically across multiple optimisation points. Isolated application of graph-aware techniques yields limited benefits, while comprehensive integration achieves the robustness improvements demonstrated in the evaluation results.
 
 \subsection{Critical Discussion and Limitations}
 
 \subsubsection{Performance Trade-off Analysis}
 
-The experimental results establish graph-aware SAT solving as a clear performance-robustness trade-off rather than a universal performance improvement. The enhanced solver consistently sacrifices 45-48\% average-case performance in exchange for guaranteed solution capability on challenging instances where baseline approaches fail completely.
+The experimental results establish graph-aware SAT solving as a clear performance-robustness trade-off rather than a universal performance improvement. The enhanced solver consistently sacrifices average-case performance (as quantified in Table~\ref{tab:scaling_performance}) in exchange for guaranteed solution capability on challenging instances where baseline approaches fail completely.
 
 Critical evaluation reveals that this trade-off represents a rational design choice for applications where solution reliability takes precedence over execution speed. The predictable overhead factor enables accurate cost-benefit analysis, while the robustness guarantee provides operational confidence for critical deployment scenarios.
 
-However, the performance overhead limits the enhanced solver's applicability in speed-critical applications where sub-second execution requirements cannot accommodate the preprocessing costs. This limitation suggests that graph-aware optimizations require careful application domain analysis to determine deployment suitability.
+However, the performance overhead limits the enhanced solver's applicability in speed-critical applications where sub-second execution requirements cannot accommodate the preprocessing costs. This limitation suggests that graph-aware optimisations require careful application domain analysis to determine deployment suitability.
 
-The trade-off analysis also reveals opportunities for adaptive optimization strategies that could dynamically adjust graph-aware processing based on problem characteristics. Simple instances might bypass expensive preprocessing, while challenging instances would activate full optimization capabilities, potentially achieving better overall performance profiles.
+The trade-off analysis also reveals opportunities for adaptive optimisation strategies that could dynamically adjust graph-aware processing based on problem characteristics. Simple instances might bypass expensive preprocessing, while challenging instances would activate full optimisation capabilities, potentially achieving better overall performance profiles.
 
 \subsubsection{Experimental Scope and Validity Limitations}
 
-The evaluation scope encompasses moderate-scale instances (50-90 vertices) that may not fully represent the performance characteristics of industrial-scale graph coloring applications. Larger problem instances could potentially amortize preprocessing costs more effectively, suggesting that the current results may underestimate the enhanced solver's comparative performance on real-world problems.
+The evaluation scope encompasses moderate-scale instances (50-90 vertices) that may not fully represent the performance characteristics of industrial-scale graph colouring applications. Larger problem instances could potentially amortise preprocessing costs more effectively, suggesting that the current results may underestimate the enhanced solver's comparative performance on real-world problems.
 
-Benchmark diversity limitations emerge from the focus on random graph structures and simple regular patterns, potentially missing important graph classes that occur in practical applications. Real-world graph coloring problems often exhibit specific structural properties (power-law degree distributions, community structure, hierarchical organization) that could interact differently with graph-aware optimizations.
+Benchmark diversity limitations emerge from the focus on random graph structures and simple regular patterns, potentially missing important graph classes that occur in practical applications. Real-world graph colouring problems often exhibit specific structural properties (power-law degree distributions, community structure, hierarchical organisation) that could interact differently with graph-aware optimisations.
 
 Statistical validity concerns arise from the limited sample sizes in challenging instance evaluation, where timeout protection prevents extensive repetition on failure-prone test cases. While the robustness differences are dramatic and consistent, broader evaluation would strengthen confidence in the generalizability of the results.
 
-Implementation maturity limitations include the conservative optimization approach that prioritizes correctness and compatibility over aggressive performance optimization. More sophisticated graph analysis techniques and advanced centrality computation methods could potentially reduce preprocessing overhead while maintaining robustness benefits.
+Implementation maturity limitations include the conservative optimisation approach that prioritises correctness and compatibility over aggressive performance optimisation. More sophisticated graph analysis techniques and advanced centrality computation methods could potentially reduce preprocessing overhead while maintaining robustness benefits.
 
 \subsubsection{Research Contributions and Future Directions}
 
-The enhanced solver validates the core research hypothesis that domain-specific graph structural information can improve SAT solving robustness for graph coloring applications, albeit at the cost of average-case performance. This contribution establishes the viability of graph-aware SAT solving as a specialized technique for reliability-critical applications.
+The enhanced solver validates the core research hypothesis that domain-specific graph structural information can improve SAT solving robustness for graph colouring applications, albeit at the cost of average-case performance. This contribution establishes the viability of graph-aware SAT solving as a specialized technique for reliability-critical applications.
 
-The research demonstrates that centrality-based variable ordering provides measurable benefits on challenging instances, contributing to the broader understanding of how graph structural properties can inform SAT solving heuristics. The systematic evaluation methodology provides a template for future research on domain-specific SAT solver optimizations.
+The research demonstrates that centrality-based variable ordering provides measurable benefits on challenging instances, contributing to the broader understanding of how graph structural properties can inform SAT solving heuristics. The systematic evaluation methodology provides a template for future research on domain-specific SAT solver optimisations.
 
-Future research directions include investigating adaptive optimization strategies that could dynamically balance preprocessing costs against problem difficulty, exploring advanced graph analysis techniques that could reduce computational overhead, and extending the evaluation to larger-scale problems and diverse graph structure classes.
+Future research directions include investigating adaptive optimisation strategies that could dynamically balance preprocessing costs against problem difficulty, exploring advanced graph analysis techniques that could reduce computational overhead, and extending the evaluation to larger-scale problems and diverse graph structure classes.
 
-The work establishes foundation for hybrid solving approaches that could combine the enhanced solver's robustness guarantees with complementary techniques for improved average-case performance, potentially achieving superior overall solution profiles for graph coloring applications.
+The work establishes foundation for hybrid solving approaches that could combine the enhanced solver's robustness guarantees with complementary techniques for improved average-case performance, potentially achieving superior overall solution profiles for graph colouring applications.
